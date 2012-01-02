@@ -1,5 +1,6 @@
 #include <iostream>
 #include "util.h"
+#include <stdio.h>
 
 i32 add(const i32 a, const i32  b)
 {

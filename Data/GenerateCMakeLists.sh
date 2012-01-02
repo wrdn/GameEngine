@@ -9,7 +9,8 @@ then
 #echo -e "copy_file(\"$f\" \"\${CMAKE_RUNTIME_OUTPUT_DIRECTORY}\")" >> CMakeLists.txt
 echo -e "copy_file(\"$f\" \"\${PROJECT_BINARY_DIR}/\${PROJECT_NAME}/Debug\")" >> CMakeLists.txt # copy to Debug
 echo -e "copy_file(\"$f\" \"\${PROJECT_BINARY_DIR}/\${PROJECT_NAME}/Release\")" >> CMakeLists.txt # copy to Release
-echo -e "copy_file(\"$f\" \"\${PROJECT_BINARY_DIR}/src/\")" >> CMakeLists.txt # copy for visual studio to build/src directory
+
+echo -e "IF(\${CMAKE_SYSTEM_NAME} MATCHES \"Windows\")\ncopy_file(\"$f\" \"\${PROJECT_BINARY_DIR}/src/\")\nENDIF(\${CMAKE_SYSTEM_NAME} MATCHES \"Windows\")" >> CMakeLists.txt # copy for visual studio to build/src directory
 
 fi
 done
