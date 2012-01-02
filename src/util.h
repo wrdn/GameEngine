@@ -8,7 +8,7 @@
 // without manually adding includes
 //#include "Log.h"
 
-#ifdef __WIN32
+#ifdef _WIN32
 #define ALIGN(code, alignment) __declspec(align(alignment)) code
 #elif __linux__
 #define ALIGN(code,alignment) code __attribute__ ((aligned(alignment)))

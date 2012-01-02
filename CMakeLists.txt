@@ -1,9 +1,12 @@
 cmake_minimum_required(VERSION 2.8.0)
 project("GameEngine")
 
-if(NOT CMAKE_BUILD_TYPE)
+# Debug or Release only
+IF((NOT CMAKE_BUILD_TYPE) OR (NOT(CMAKE_BUILD_TYPE MATCHES Debug OR CMAKE_BUILD_TYPE MATCHES Release)))
 set (CMAKE_BUILD_TYPE Debug)
-endif(NOT CMAKE_BUILD_TYPE)
+ENDIF((NOT CMAKE_BUILD_TYPE) OR (NOT(CMAKE_BUILD_TYPE MATCHES Debug OR CMAKE_BUILD_TYPE MATCHES Release)))
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/${CMAKE_BUILD_TYPE}")
 
 # LINUX (SETTING VARIABLES)
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -14,9 +17,21 @@ ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 # WINDOWS (SETTING VARIABLES)
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/${CMAKE_BUILD_TYPE}")
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib/win32/freeglut260/ ${CMAKE_CURRENT_SOURCE_DIR}/lib/win32/AntTweakBar/include/)
+link_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib/win32/AntTweakBar/lib ${CMAKE_CURRENT_SOURCE_DIR}/lib/win32/freeglut260/${CMAKE_BUILD_TYPE})
+
+# copy libraries for Debug AND Release mode
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/lib/win32/freeglut260/Debug/freeglut.dll ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../Debug/freeglut.dll COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/lib/win32/freeglut260/Debug/glew32.dll ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../Debug/glew32.dll COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/lib/win32/AntTweakBar/lib/AntTweakBar.dll ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../Debug/AntTweakBar.dll COPYONLY)
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/lib/win32/freeglut260/Release/freeglut.dll ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../Release/freeglut.dll COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/lib/win32/freeglut260/Release/glew32.dll ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../Release/glew32.dll COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/lib/win32/AntTweakBar/lib/AntTweakBar.dll ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../Release/AntTweakBar.dll COPYONLY)
+
+
+ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 add_subdirectory(src)
 add_subdirectory(Data)

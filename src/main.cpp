@@ -11,5 +11,10 @@ int main(/*const int argc, const char **argv*/)
   int i = 10;
   i = add(i, 5);
   std::cout << "Hello world!" << std::endl;
+
+  bool b = file_exists("Data/test.txt");
+  std::cout << "File exists: " << b << std::endl;
+
+  getchar();
   return 0;
 };
