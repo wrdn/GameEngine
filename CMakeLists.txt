@@ -21,15 +21,25 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib/win32/freeglut260/ ${CMAKE_CURRENT_SOURCE_DIR}/lib/win32/AntTweakBar/include/)
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib/win32/AntTweakBar/lib ${CMAKE_CURRENT_SOURCE_DIR}/lib/win32/freeglut260/${CMAKE_BUILD_TYPE})
 
-# copy libraries for Debug AND Release mode
+# Debug libs (Debug)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/lib/win32/freeglut260/Debug/freeglut.dll ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../Debug/freeglut.dll COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/lib/win32/freeglut260/Debug/glew32.dll ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../Debug/glew32.dll COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/lib/win32/AntTweakBar/lib/AntTweakBar.dll ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../Debug/AntTweakBar.dll COPYONLY)
 
+# Release libs (Release)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/lib/win32/freeglut260/Release/freeglut.dll ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../Release/freeglut.dll COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/lib/win32/freeglut260/Release/glew32.dll ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../Release/glew32.dll COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/lib/win32/AntTweakBar/lib/AntTweakBar.dll ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../Release/AntTweakBar.dll COPYONLY)
 
+# MinSizeRel libs (Release)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/lib/win32/freeglut260/Release/freeglut.dll ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../MinSizeRel/freeglut.dll COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/lib/win32/freeglut260/Release/glew32.dll ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../MinSizeRel/glew32.dll COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/lib/win32/AntTweakBar/lib/AntTweakBar.dll ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../MinSizeRel/AntTweakBar.dll COPYONLY)
+
+# RelWithDebInfo libs (Release)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/lib/win32/freeglut260/Release/freeglut.dll ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../RelWithDebInfo/freeglut.dll COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/lib/win32/freeglut260/Release/glew32.dll ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../RelWithDebInfo/glew32.dll COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/lib/win32/AntTweakBar/lib/AntTweakBar.dll ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../RelWithDebInfo/AntTweakBar.dll COPYONLY)
 
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 

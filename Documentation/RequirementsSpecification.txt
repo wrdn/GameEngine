@@ -1,16 +1,27 @@
 Game Engine Requirements:
 
-* Load OBJ files (and materials)
-* md5 model and animation loader and player (with GPU hardware skinning)
-* Resource manager (synchronous) with callback function support.
-* Load textures (stb_image) through Resource manager
-* Load audio (FMOD or OpenAL) through Resource manager
+-- Engine Configuration --
+* Configuration file (global engine properties only)
+
+-- Memory --
 * Memory manager
-* Event system
+
+-- Resources --
+* Resource manager (synchronous) with callback function support.
+* Load OBJ files (and materials)
+* md5 model loader
+* Load textures (stb_image) through Resource manager
+* Load audio (FMOD or OpenAL) through Resource manager (Audio Playback)
+* Load data from zip files (zlib?)
+* Ability to cook models to produce own format that can be quickly loaded into the engine
+
+-- Rendering --
 * Render target support and Multiple Render Target support (for deferred rendering)
 * Ability to save render target (essentially a screenshot)
 * Deferred Rendering
-* Normal mapping (with correct tangent calculations)
 * Shadows (Variance Shadow Maps, Cascaded Shadow Maps, Other?)
-* Configuration file (global engine properties only)
-* Ability to cook models to produce own format that can be quickly loaded into the engine
+* Normal mapping (with correct tangent calculations)
+* md5 animation player (GPU skinning)
+
+-- Misc --
+* Event system
