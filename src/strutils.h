@@ -48,3 +48,8 @@ void TrimLeadingWhitespace(std::string &s);
 void TrimTrailingWhitespace(std::string &s);
 
 u32 CountCharacterOccurrence(const c8* str, const c8 delim);
+
+std::string strtolower(const std::string &s);
+std::string strtoupper(const std::string &s);
+
+bool stringtobool(const std::string &s);

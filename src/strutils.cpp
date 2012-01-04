@@ -210,6 +210,7 @@ c8 *read_src_raw(const c8 *file)
 // single read, before appending NULL to terminate string
 c8 *read_src_fast(const c8 *file)
 {
+	if(!file) { return 0; }
 	ifstream fs(file, ios::binary);
 	if(!fs.is_open()) return 0;
 
@@ -292,4 +293,25 @@ u32 CountCharacterOccurrence(const c8* str, const c8 delim)
 		if(c == delim) { ++count; }
 	}
 	return count;
+};
+
+std::string strtolower(const std::string &sp)
+{
+	string s = sp;
+	for(u32 i=0;i<s.size();++i)
+		s[i] = (c8)tolower(s[i]);
+	return s;
+};
+
+std::string strtoupper(const std::string &sp)
+{
+	string s = sp;
+	for(u32 i=0;i<s.size();++i)
+		s[i] = (c8)toupper(s[i]);
+	return s;
+};
+
+bool stringtobool(const std::string &s)
+{
+	return strtolower(s) == "true" ? true : false;
 };
