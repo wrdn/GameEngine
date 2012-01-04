@@ -5,22 +5,23 @@
 #include <string>
 #include "float3.h"
 
-#define EngineConfigVersion "1.0" // config "version" flag must equal this
-#define MINIMUM_MEMORY_ALLOC 128U // note: "U" denotes unsigned integer
-
 class Namable // Debug functionality - inherited item can be given a name (useful for debugging)
 {
-private:
 #ifdef _DEBUG
+private:
 	std::string name;
 public:
-	void SetName(const std::string &m) { name = m; }
-	std::string &GetName() { return name; }
+	inline void SetName(const std::string &m) { name = m; };
+	inline const std::string &GetName() { return name; };
 #else
-#define SetName(m)
-#define GetName() ""
+public:
+	inline void SetName(const std::string &m) { if(m.size()){} };
+	inline const std::string GetName() { return ""; };
 #endif
 };
+
+#define EngineConfigVersion "1.0" // config "version" flag must equal this
+#define MINIMUM_MEMORY_ALLOC 128U // note: "U" denotes unsigned integer
 
 enum CameraProjectionType { Perspective, Orthographic };
 class Camera : public Namable

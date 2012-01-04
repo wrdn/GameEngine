@@ -2,6 +2,7 @@
 #include "util.h"
 #include "strutils.h"
 #include <sstream> // helps with streaming into types
+#include <string.h>
 
 using namespace std;
 using namespace rapidxml;

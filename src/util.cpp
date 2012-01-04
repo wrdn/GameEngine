@@ -43,9 +43,13 @@ bool NearZero(const f32 v)
 // Fast inverse square root, from http://pizer.wordpress.com/2008/10/12/fast-inverse-square-root/
 f32 InvSqrt(f32 x)
 {
+#ifdef _WIN32
    u32 i = 0x5F1F1412 - (*(u32*)&x >> 1);
    f32 tmp = *(f32*)&i;
    return tmp * (1.69000231f - 0.714158168f * x * tmp * tmp);
+#else // fix the warnings (remember Werror) on Linux, then we can use the code above again
+   return (1.0f / sqrt(x));
+#endif
 };
 
 // Source: http://www.cse.yorku.ca/~oz/hash.html
