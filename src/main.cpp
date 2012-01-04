@@ -42,7 +42,7 @@ inline void _dbg_check_mem(void* const mem, const u32 sz) // check for 0xDEADBEE
 #define _dbg_check_mem(mem,sz)
 #endif
 
-int main(const int argc, const char **argv)
+int main(/*const int argc, const char **argv*/)
 {
 
 

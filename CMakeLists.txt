@@ -12,13 +12,16 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib/noplatform/rapidxml-1.13/)
 
 # LINUX (SETTING VARIABLES)
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -Werror -g -msse3") # gcc/g++ flags
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -Werror -g -msse3") # gcc/g++ flags (Highest warning level, warnings as errors, Debug build)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib/linux/AntTweakBar/include/) # include directories
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib/linux/AntTweakBar/lib) # additional library directories
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 # WINDOWS (SETTING VARIABLES)
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+
+set(CMAKE_CXX_FLAGS "/W4 /WX /EHsc /MP") # visual studio flags (Warning Level 4, Warnings as errors)
+add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib/win32/freeglut260/ ${CMAKE_CURRENT_SOURCE_DIR}/lib/win32/AntTweakBar/include/)
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib/win32/AntTweakBar/lib ${CMAKE_CURRENT_SOURCE_DIR}/lib/win32/freeglut260/${CMAKE_BUILD_TYPE})
