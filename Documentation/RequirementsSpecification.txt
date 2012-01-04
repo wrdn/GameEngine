@@ -1,10 +1,16 @@
 Game Engine Requirements:
 
 -- Engine Configuration --
-* Configuration file (global engine properties only)
-
+* XML Configuration file (global engine properties and scene description, inc objects, lights, etc). rapidxml?
+* Alternative: Plain text file, with Action: ObjectName { Configuration (multi-line) },
+e.g. AddModel: Sphere
+				{
+					Position=(1,2,3)
+					Radius=2
+				}
+				
 -- Memory --
-* Memory manager
+* Memory manager (double ended stack allocator, pool allocator)
 
 -- Resources --
 * Resource manager (synchronous) with callback function support.
@@ -21,7 +27,9 @@ Game Engine Requirements:
 * Deferred Rendering
 * Shadows (Variance Shadow Maps, Cascaded Shadow Maps, Other?)
 * Normal mapping (with correct tangent calculations)
+* Screen Space Ambient Occlusion (SSAO)
 * md5 animation player (GPU skinning)
 
 -- Misc --
 * Event system
+* Proper 3D FPS camera, WASDQR for movement, mouse to change direction (Only when mouse button held down though)

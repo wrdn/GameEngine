@@ -1,8 +1,10 @@
 #include <iostream>
-#include "util.h"
 #include <stdio.h>
 #include <assert.h>
 
+#include <rapidxml.hpp>
+
+#include "util.h"
 #include "PerfTimer.h"
 
 void *gGlobalMemoryBuffer = 0;
@@ -42,6 +44,9 @@ inline void _dbg_check_mem(void* const mem, const u32 sz) // check for 0xDEADBEE
 
 int main(const int argc, const char **argv)
 {
+
+
+
 	const u32 SizeToAllocateInMB = 512; // Maximum memory application should be able to use
 	const u32 AllocSize = (SizeToAllocateInMB * 1024) * 1024;
 

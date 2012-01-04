@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Case insensitive except for filenames (e.g. of obj file)
+     Note many things are given a "name". These should be converted to lowercase then hashed.
+     In the debug build, the hash and original string should be stored
+     In many cases, there may be valid and invalid values. If an invalid value is found, we may use a default value.
+     We will also log the information to warn that an invalid value was specified
+     -->
+<engine version="1.0">
+  <global>
+    <MaxMemory>256</MaxMemory> <!-- Max memory we can use in MegaBytes. To avoid problems if very small value specified, engine defines a minimum (128MB) -->
+  </global> <!-- Global engine properties -->
+  <cameras active="FPSCamera"> <!-- List of cameras. Active (first) camera also specified (only required if >1 camera) -->
+    <camera name="FPSCamera" type="perspective"> <!-- If >1 camera, name is required (ignored if not specified), otherwise optional. type optioanal, perspective|orthographic, default perspective -->
+      <position>x y z</position> <!-- Required -->
+      <target>x y z</target> <!-- Required -->
+      <up>x y z</up> <!-- Optional. Default (0,1,0) -->
+      <fov>45</fov> <!-- In degrees. Optional. Default 45 -->
+      <static>false</static> <!-- Used to disallow camera movement -->
+    </camera>
+  </cameras>
+  <keybinding>
+    <!-- Associates "action" with a key. Key letter can be reused (multiple actions when pressed).
+         If "onup" true (default false) the action will only be triggered when key released -->
+    <key action="CamMoveForward" onup="false">W</key>
+    <key action="CamMoveBackward" onup="false">W</key>
+  </keybinding> <!-- Key bindings (keys associated with Action strings that are well known by the application) -->
+  <lights>
+    <light>
+      <position>x y z</position>
+      <spot_direction>x y z</spot_direction>
+      <spot_cutoff>x y z</spot_cutoff>
+    </light>
+  </lights> <!-- Light properties: postition, amb, diff and spec color, direction and cutoff angle (optional, spotlights only) -->
+  <Shaders> <!-- Note: default vert and frag shader provided (colours object solid red). These may be used if shader specified in the ShaderPair is invalid. These issues, and compilation issues will be logged -->
+    <VertexShader name="PhongVertexShader">
+      <filename>phong.vert</filename>
+    </VertexShader>
+    <FragmentShader name="PhongFragShader">
+      <filename>phong.frag</filename>
+    </FragmentShader>
+    <ShaderPair name="PhongShaderSet">
+      <VertexShaderName>PhongVertexShader</VertexShaderName>
+      <FragmentShaderName>PhongFragShader</FragmentShaderName>
+      <uniform name="BaseTexture" type="int">0</uniform> <!-- Specifying the unit to use for texture -->
+      <uniform name="BumpTexture" type="int">1</uniform>
+      <uniform name="IntegerForShader" type="int">10</uniform>
+    </ShaderPair>
+  </Shaders> <!-- <VertexShader id> and <FragmentShader id> and <ShaderPair> -->
+  <Materials>
+    <Material name="TestMaterial">
+      <ka>r g b</ka>
+      <kd>r g b</kd>
+      <ks>r g b</ks>
+      <Shader>PhongShaderSet</Shader>
+      <Texture unit="0"> <!-- unit (optional, default 0) is used to specify which texture unit it should be in. 0 to 7 valid (else default used). -->
+        <filename>file.bmp</filename>
+      </Texture>
+    </Material>
+  </Materials> <!-- Each material has: id, ka,kd,ks, diffuse texture (optional), bump texture (optional), shader -->
+
+  <!-- Contains <mesh>'s. position, rotation, scale, associated material, filename (may denote for example, an OBJ file. If md5 file, we may load skeleton).
+  Inbuilt mesh types (e.g. "sphere" and "cylinder" for which radius can be defined).
+  Can also specify as the filename file.gmd (engines own model format) - this allows models to be cooked before use, faster loading -->
+  <Models>
+    <mesh name="An object in the game" predef="sphere|cylinder|cube"> <!-- name is entirely optional (for debugging purposes only). predef can be used to create a mesh the engine supports -->
+      <filename>file.obj</filename> <!-- file extension determines what to load. ".obj" for OBJ, ".md5" for md5 file. ".gmd" for own model format. If load fails, defaults to a cube (with default shaders used so its solid red) -->
+      <position>x y z</position>
+      <orientation>x y z</orientation> <!-- rotation around (1,0,0), (0,1,0) and (0,0,1) -->
+      <scale>x y z</scale>
+      <radius>5</radius> <!-- Only allowed if predef="sphere|cylinder" -->
+    </mesh>
+  </Models>
+</engine>
