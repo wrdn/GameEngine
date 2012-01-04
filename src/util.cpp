@@ -41,8 +41,17 @@ bool NearZero(const f32 v)
 };
 
 // Fast inverse square root, from http://pizer.wordpress.com/2008/10/12/fast-inverse-square-root/
-f32 InvSqrt(f32 x)
+// Recoded to remove aliasing issues (and warnings under Linux), based on: //http://blog.reloadsystems.net/2009/11/08/avoid-dereferencing-in-carmacks-implementation-of-approximate-roots/
+union flpack { long l; f32 f; };
+f32 InvSqrt(f32 value)
 {
+   flpack fd;
+   fd.f = value;
+   long i = fd.l;
+   fd.l = 0x5F1F1412 - (i >> 1);
+   f32 y = fd.f;
+   return y*(1.69000231f - 0.714158168f * value * y*y);
+/*
 #ifdef _WIN32
    u32 i = 0x5F1F1412 - (*(u32*)&x >> 1);
    f32 tmp = *(f32*)&i;
@@ -50,6 +59,7 @@ f32 InvSqrt(f32 x)
 #else // fix the warnings (remember Werror) on Linux, then we can use the code above again
    return (1.0f / sqrt(x));
 #endif
+*/
 };
 
 // Source: http://www.cse.yorku.ca/~oz/hash.html

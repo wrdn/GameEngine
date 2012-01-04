@@ -27,7 +27,7 @@ void clamp(i32 &v, i32 lower, i32 upper);
 
 bool NearZero(const f32 v);
 
-f32 InvSqrt(f32 x);
+f32 InvSqrt(f32 value);
 
 // djb2 string hashing
 unsigned long hash_djb2(const uc8 *str);

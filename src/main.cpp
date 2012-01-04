@@ -43,7 +43,6 @@ inline void _dbg_check_mem(void* const mem, const u32 sz) // check for 0xDEADBEE
 
 int main(/*const int argc, const char **argv*/)
 {
-
 	EngineConfig conf;
 	conf.ParseConfigFile("Data/config.xml");
 
