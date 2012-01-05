@@ -24,26 +24,17 @@ float4::float4(const f32 v)
 
 float4::float4(const f32 _x, f32 _y, f32 _z, f32 _w)
 {
-	vec[0] = _x;
-	vec[1] = _y;
-	vec[2] = _z;
-	vec[3] = _w;
+	set(_x, _y, _z, _w);
 };
 
 float4::float4(const f32 _x, f32 _y, f32 _z)
 {
-	vec[0] = _x;
-	vec[1] = _y;
-	vec[2] = _z;
-	vec[3] = 0;
+	set(_x, _y, _z, 0);
 };
 
 float4::float4(const f32 * v)
 {
-	vec[0] = v[0];
-	vec[1] = v[1];
-	vec[2] = v[2];
-	vec[3] = v[3];
+	set(v[0], v[1], v[2], v[3]);
 };
 
 float4 float4::FromXYZ(const f32 * v)
@@ -54,6 +45,14 @@ float4 float4::FromXYZ(const f32 * v)
 void float4::setall(const f32 v)
 {
 	vec[0] = vec[1] = vec[2] = vec[3] = v;
+};
+
+void float4::set(const f32 x, const f32 y, const f32 z, const f32 w)
+{
+	vec[0] = x;
+	vec[1] = y;
+	vec[2] = z;
+	vec[3] = w;
 };
 
 void float4::zero() { setall(0); };
@@ -209,6 +208,14 @@ std::ostream& operator<<(std::ostream &out, const float4 &m)
 	f32 * vec = m.GetVec();
 	std::cout << "{" << vec[0] << "," << vec[1] << "," << vec[2] << "," << vec[3] << "}";
 	return out;
+};
+
+std::istream& operator>>(std::istream &in, float4& out)
+{
+	f32 x=0, y=0, z=0, w=0;
+	in >> x >> y >> z >> w;
+	out.set(x, y, z, w);
+	return in;
 };
 
 /*

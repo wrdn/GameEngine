@@ -30,10 +30,15 @@ enum Mat44Index
 	m44 = 15,
 };
 
+// using unaligned loads so we can use unaligned float4s
+#define Mat44_Vector_Load_Fn _mm_loadu_ps
+#define Mat44_Vector_Store_Fn _mm_storeu_ps
+
 // Note: Calculations are performed in SSE registers. Data is assumed to be aligned to a 16 byte boundary.
-// If the memory is on the stack, this is guaranteed by the compiler (due to ALIGN(16) within the classes Mat44 and float4)
-// If it is on the heap, you cannot rely on alignment by default, so you may want to use _aligned_malloc() and _aligned_free
-// Consider also overriding new so that *malloc* functions can be used, and the constructors will be called automatically
+// NOTE: Mat44 will be 16 byte aligned on the stack, but by default, float4 is not. Mat44 assumes float4 is aligned
+// and it is the task of the programmer to ensure this. As an alternative, replace the code with an unaligned (slower) load
+// to avoid the problem entirely (at the cost of a slight performance hit)
+// See #define MAT44_UNALIGNED_VECTOR_LOADS
 class Mat44
 {
 private:

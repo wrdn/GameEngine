@@ -8,7 +8,12 @@ class float3;
 class float4
 {
 private:
-	ALIGN(f32 vec[4], 16);
+	//ALIGN(f32 vec[4], 16);
+
+	// Due to issues with std::vector data alignment, vec is no longer aligned.
+	// One possible fix is to copy vector.h and change resize() to pass by reference
+	f32 vec[4];
+
 public:
 	f32 * GetVec() const { return (f32*)vec; };
 
@@ -42,6 +47,7 @@ public:
 
 	void zero(); // zero's the current vector
 	void setall(const f32 v);
+	void set(const f32 x, const f32 y, const f32 z, const f32 w);
 
 	float4 add(const float4 &v) const;
 	float4 sub(const float4 &v) const;
@@ -94,6 +100,7 @@ inline float4 operator/(const f32 a, const float4 &b) { return float4(a)/=b; }
 inline float4 operator^(const float4 &a, const float4 &b) { return float4(a)^=b; }
 
 std::ostream& operator<<(std::ostream &out, const float4 &m);
+std::istream& operator>>(std::istream &in, float4& out);
 
 /*
 #include <emmintrin.h> // SSE2    http://softpixel.com/~cwright/programming/simd/sse2.php

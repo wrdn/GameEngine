@@ -39,10 +39,13 @@
     <key action="CamMoveBackward" onup="false">W</key>
   </keybinding> <!-- Key bindings (keys associated with Action strings that are well known by the application) -->
   <lights>
-    <light>
-      <position>x y z</position>
-      <spot_direction>x y z</spot_direction>
-      <spot_cutoff>x y z</spot_cutoff>
+	<light> <!-- position w 0||1 for directional/point light respectively -->
+      <position>0.5 0.3 1.5 0.9</position>
+      <spot_direction>x y z</spot_direction> <!-- If found, the light is interpreted as a spotlight. position.w forced to 1 -->
+      <spot_cutoff>angle</spot_cutoff> <!-- If found, the light is interpreted as a spotlight. position.w forced to 1 -->
+	  <amb>r g b a</amb>
+	  <diff>r g b a</diff>
+	  <spec>r g b a</spec>
     </light>
   </lights> <!-- Light properties: postition, amb, diff and spec color, direction and cutoff angle (optional, spotlights only) -->
   <Shaders> <!-- Note: default vert and frag shader provided (colours object solid red). These may be used if shader specified in the ShaderPair is invalid. These issues, and compilation issues will be logged -->

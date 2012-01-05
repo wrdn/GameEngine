@@ -198,7 +198,8 @@ float4 Mat44::Mult(const float4 &m) const
 		_mm_load_ps(tr.mat+12)
 	};
 
-	__m128 v = _mm_load_ps(m.GetVec());
+	//__m128 v = _mm_load_ps(m.GetVec());
+	__m128 v = Mat44_Vector_Load_Fn(m.GetVec());
 
 	// Broadcast vector into SSE registers
 	__m128 xb = _mm_shuffle_ps(v,v,0x00);
@@ -216,7 +217,7 @@ float4 Mat44::Mult(const float4 &m) const
 	__m128 r = _mm_add_ps(_mm_add_ps(xb, yb),_mm_add_ps(zb, wb));
 
 	float4 returnVec;
-	_mm_store_ps(returnVec.GetVec(), r);
+	Mat44_Vector_Store_Fn(returnVec.GetVec(), r);
 	return returnVec;
 };
 
@@ -233,8 +234,8 @@ void Mat44::BatchMult(const float4 * const in, float4 *out, u32 len) const
 
 	while(len--)
 	{
-		__m128 v = _mm_load_ps(in[len].GetVec());
-		_mm_prefetch((const char*)&in[len+1], _MM_HINT_T0);
+		__m128 v = Mat44_Vector_Load_Fn(in[len].GetVec());
+		//_mm_prefetch((const char*)&in[len+1], _MM_HINT_T0);
 
 		// Broadcast vector into SSE registers
 		__m128 xb = _mm_shuffle_ps(v,v,0x00);
@@ -251,8 +252,8 @@ void Mat44::BatchMult(const float4 * const in, float4 *out, u32 len) const
 		// Add results
 		__m128 r = _mm_add_ps(_mm_add_ps(xb, yb),_mm_add_ps(zb, wb));
 
-		_mm_prefetch((const char*)&out[len+1], _MM_HINT_T0);
-		_mm_store_ps(out[len].GetVec(), r);
+		//_mm_prefetch((const char*)&out[len+1], _MM_HINT_T0);
+		Mat44_Vector_Store_Fn(out[len].GetVec(), r);
 	}
 };
 
