@@ -3,6 +3,8 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 
+#include <pmmintrin.h>
+
 void set_bit(u32 &opt, const u32 bit)
 {
 	opt |= bit;
@@ -38,6 +40,11 @@ void clamp(i32 &v, i32 lower, i32 upper)
 bool NearZero(const f32 v)
 {
 		return fabs(v) < EPSILON;
+};
+
+bool NearOne(const f32 v)
+{
+	return v > 0.999f && v <= 1.001f;
 };
 
 // Fast inverse square root, from http://pizer.wordpress.com/2008/10/12/fast-inverse-square-root/
@@ -113,4 +120,20 @@ f32 randflt(f32 min, f32 max)
     // then add .78, giving you a float between .78 and 4.5
     f32 range = max - min;  
     return (random*range) + min;
+};
+
+f32 reciprocal_sqrt(f32 f)
+{
+	/*
+	// SSE Version (Fast):
+	f32 result; // reciprocal square root using SSE (accurate to ~11/12 mantissa bits)
+	_mm_store_ss(&result, _mm_rsqrt_ss( _mm_load_ss(&f) ));
+	return result;
+
+	// More accurate scalar version:
+	return 1.0f / sqrt(f);
+	*/
+	f32 result; // reciprocal square root using SSE (accurate to ~11/12 mantissa bits)
+	_mm_store_ss(&result, _mm_rsqrt_ss( _mm_load_ss(&f) ));
+	return result;
 };

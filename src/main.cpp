@@ -141,8 +141,6 @@ void reshape (i32 width, i32 height)
 
 int main(i32 argc, c8 **argv)
 {
-	if(argc){} if(argv){}
-
 	Camera c;
 	c.speed = 10;
 	c.position.set(0.0f);
