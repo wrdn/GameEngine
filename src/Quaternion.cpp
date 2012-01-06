@@ -1,13 +1,15 @@
 #include "Quaternion.h"
 #include <cmath>
 
-Quaternion::Quaternion() { set(0); };
+Quaternion::Quaternion() { identity(); };
 
 Quaternion::Quaternion(const f32 x, const f32 y, const f32 z, const f32 w) { set(x,y,z,w); };
 
 Quaternion::Quaternion(const float3 &v) { set(v,0.0f); };
 
-Quaternion::Quaternion(const float3& axis, const f32 angle) { *this = Quaternion::FromAxisAngle(axis,angle); }
+Quaternion::Quaternion(const float3& axis, const f32 angle_in_radians) { *this = Quaternion::FromAxisAngle(axis,angle_in_radians); }
+
+void Quaternion::identity() { set(0,0,0,1); } // identity quaternion (no rotation)
 
 Quaternion Quaternion::add(const Quaternion &q) const
 {
@@ -64,11 +66,11 @@ f32 Quaternion::dot(const Quaternion &q) const
 };
 
 // w=cos(angle/2), xyz=axis.xyz*sin(angle)
-Quaternion Quaternion::FromAxisAngle(const float3 &axis, const f32 angle)
+Quaternion Quaternion::FromAxisAngle(const float3 &axis, const f32 angle_in_radians)
 {
 	CHECK_NORMALISED(axis.magnitude());
 
-	f32 t = angle*0.5f;
+	f32 t = angle_in_radians*0.5f;
 	f32 sinAngle = sin(t);
 	return Quaternion(axis.x()*sinAngle, axis.y()*sinAngle, axis.z()*sinAngle, cos(t));
 };
@@ -134,7 +136,7 @@ void Quaternion::ExtractAxisAngle(float3 &out_axis, f32 &out_angle) const
 	out_angle = acos(w()) * 2.0f;
 };
 
-inline float3 Quaternion::rotate(const float3& v) const
+float3 Quaternion::rotate(const float3& v) const
 {
 	CHECK_NORMALISED(v.magnitude());
 

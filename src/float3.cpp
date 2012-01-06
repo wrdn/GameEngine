@@ -118,16 +118,6 @@ float3 float3::normalize() const
 	return float3(vec[0]*recip, vec[1]*recip, vec[2]*recip);
 };
 
-void float3::normalize()
-{
-	f32 lsqr = LengthSquared();
-	if(NearZero(lsqr)) { *this = ZERO; };
-	f32 recip = InvSqrt(lsqr);
-	vec[0] *= recip;
-	vec[1] *= recip;
-	vec[2] *= recip;
-};
-
 f32 float3::magnitude() const
 {
 	return sqrtf( LengthSquared() );

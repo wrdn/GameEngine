@@ -85,6 +85,11 @@ inline float2 operator-(const float2 &a, const f32 b) { return float2(a)-=float2
 inline float2 operator*(const float2 &a, const f32 b) { return float2(a)*=float2(b); };
 inline float2 operator/(const float2 &a, const f32 b) { return float2(a)/=float2(b); };
 
+inline float2 operator+=(const float2 &a, const f32 b) { return float2(a)+=float2(b); };
+inline float2 operator-=(const float2 &a, const f32 b) { return float2(a)-=float2(b); };
+inline float2 operator*=(const float2 &a, const f32 b) { return float2(a)*=float2(b); };
+inline float2 operator/=(const float2 &a, const f32 b) { return float2(a)/=float2(b); };
+
 inline float2 operator+(const f32 a, const float2 &b) { return float2(a)+=b; };
 inline float2 operator-(const f32 a, const float2 &b) { return float2(a)+=b; };
 inline float2 operator*(const f32 a, const float2 &b) { return float2(a)+=b; };

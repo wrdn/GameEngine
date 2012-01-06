@@ -7,7 +7,8 @@
 #include "Mat44.h"
 
 #ifdef _DEBUG
-#define CHECK_NORMALISED(v) assert(NearOne(v))
+//#define CHECK_NORMALISED(v) assert(NearOne(v))
+#define CHECK_NORMALISED(v)
 #else
 #define CHECK_NORMALISED(v)
 #endif
@@ -22,7 +23,9 @@ public:
 	Quaternion();
 	Quaternion(const f32 x, const f32 y, const f32 z, const f32 w);
 	Quaternion(const float3 &v);
-	Quaternion(const float3& axis, const f32 angle);
+	Quaternion(const float3& axis, const f32 angle_in_radians);
+
+	void identity();
 
 	inline f32 x() const { return qvec[0]; }
 	inline f32 y() const { return qvec[1]; }
@@ -42,24 +45,35 @@ public:
 
 	inline float3 tofloat3() const { return float3(x(), y(), z()); }
 
-	inline Quaternion add(const Quaternion &q) const;
-	inline Quaternion sub(const Quaternion &q) const;
-	inline Quaternion mult(const f32 scale) const;
-	inline Quaternion mult(const Quaternion &q) const;
-	inline f32 magnitude() const;
-	inline Quaternion normalize() const;
-	inline Quaternion conjugate() const; // same as inverse for unit length quaternion
-	inline f32 dot(const Quaternion &q) const;
-	inline static Quaternion FromAxisAngle(const float3 &axis, const f32 angle); // w=cos(angle/2), xyz=axis.xyz*sin(angle)
-	inline static Quaternion FromEulerAngles(const f32 yaw, const f32 pitch, const f32 roll);
-	inline Mat44 ToMat44() const;
-	inline void ExtractAxisAngle(float3 &out_axis, f32 &out_angle) const;
-	inline float3 rotate(const float3& v) const; // q*v*qinverse, rotate vector using quaternion
+	Quaternion add(const Quaternion &q) const;
+	Quaternion sub(const Quaternion &q) const;
+	Quaternion mult(const f32 scale) const;
+	Quaternion mult(const Quaternion &q) const;
+	f32 magnitude() const;
+	Quaternion normalize() const;
+	Quaternion conjugate() const; // same as inverse for unit length quaternion
+	f32 dot(const Quaternion &q) const;
+	static Quaternion FromAxisAngle(const float3 &axis, const f32 angle_in_radians); // w=cos(angle/2), xyz=axis.xyz*sin(angle)
+	static Quaternion FromEulerAngles(const f32 yaw, const f32 pitch, const f32 roll);
+	Mat44 ToMat44() const;
+	void ExtractAxisAngle(float3 &out_axis, f32 &out_angle) const;
+	float3 rotate(const float3& v) const; // q*v*qinverse, rotate vector using quaternion
 
 	// lerp from 'this' to q using t
-	inline Quaternion lerp(const Quaternion &q, const f32 t) const;
-	inline static Quaternion lerp(const Quaternion &q1, const Quaternion &q2, const f32 t);
+	Quaternion lerp(const Quaternion &q, const f32 t) const;
+	static Quaternion lerp(const Quaternion &q1, const Quaternion &q2, const f32 t);
 
-	inline Quaternion slerp(const Quaternion &q, const f32 t) const;
-	inline static Quaternion slerp(const Quaternion &q1, const Quaternion &q2, const f32 t);
+	Quaternion slerp(const Quaternion &q, const f32 t) const;
+	static Quaternion slerp(const Quaternion &q1, const Quaternion &q2, const f32 t);
+
+	inline const Quaternion& operator+=(const Quaternion &rhs) { *this = add(rhs); return *this; };
+	inline const Quaternion& operator-=(const Quaternion &rhs) { *this = sub(rhs); return *this; };
+	inline const Quaternion& operator*=(const Quaternion &rhs) { *this = mult(rhs); return *this; };
+	inline const Quaternion& operator*=(const f32 scale) { *this = mult(scale); return *this; };
 };
+
+inline Quaternion operator+(const Quaternion &a, const Quaternion &b) { return Quaternion(a)+=b; }
+inline Quaternion operator-(const Quaternion &a, const Quaternion &b) { return Quaternion(a)-=b; }
+inline Quaternion operator*(const Quaternion &a, const Quaternion &b) { return Quaternion(a)*=b; }
+inline Quaternion operator*(const Quaternion &a, const f32 &b) { return Quaternion(a)*=b; }
+inline Quaternion operator*(const f32 &a, const Quaternion &b) { return Quaternion(b)*=a; }

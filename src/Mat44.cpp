@@ -499,14 +499,27 @@ std::ostream& operator<<(std::ostream &out, Mat44 &m)
 	return out;
 };
 
-Mat44 Mat44::BuildRotationMatrix(f32 angle_in_degrees, f32 x, f32 y, f32 z)
+Mat44 Mat44::BuildTranslationMatrix(const f32 x, const f32 y, const f32 z)
 {
-	float3 fv(x,y,z);
-	fv.normalize();
+	return Mat44( // translation matrix is identity matrix with x,y,z,1 in the last column
+		1,0,0,x,
+		0,1,0,y,
+		0,0,1,z,
+		0,0,0,1);
+};
+
+Mat44 Mat44::BuildRotationMatrix(const f32 angle_in_degrees, const float3& axis)
+{
+	return BuildRotationMatrix(angle_in_degrees, axis.x(), axis.y(), axis.z());
+};
+
+Mat44 Mat44::BuildRotationMatrix(const f32 angle_in_degrees, const f32 _x, const f32 _y, const f32 _z)
+{
+	float3 fv = float3(_x, _y, _z).normalize();
 	
-	x = fv.x();
-	y = fv.y();
-	z = fv.z();
+	const f32 x = fv.x();
+	const f32 y = fv.y();
+	const f32 z = fv.z();
 
 	f32 angle = DEGTORAD(angle_in_degrees);
 
@@ -534,7 +547,7 @@ Mat44 Mat44::BuildRotationMatrix(f32 angle_in_degrees, f32 x, f32 y, f32 z)
 		);
 };
 
-Mat44 Mat44::BuildScaleMatrix(f32 xscale, f32 yscale, f32 zscale)
+Mat44 Mat44::BuildScaleMatrix(const f32 xscale, const f32 yscale, const f32 zscale)
 {
 	return Mat44(
 		xscale,  0,       0,       0,
@@ -543,7 +556,7 @@ Mat44 Mat44::BuildScaleMatrix(f32 xscale, f32 yscale, f32 zscale)
 		0,       0,       0,       1);
 };
 
-void Mat44::BuildScaleMatrix(f32 xscale, f32 yscale, f32 zscale, Mat44 &out)
+void Mat44::BuildScaleMatrix(const f32 xscale, const f32 yscale, const f32 zscale, Mat44 &out)
 {
 	out.mat[m11] = xscale;
 	out.mat[m22] = yscale;

@@ -8,7 +8,7 @@ class Camera : public Namable
 {
 public:
 	f32 fov, nearPlane, farPlane;
-	float3 position, target, up;
+	float3 position, target, up, right; // target, up and right define an orthogonal basis. Therefore target=upXright, up=targetXright and right=upXtarget (where X signifies cross product)
 	bool isStatic;
 	CameraProjectionType projectionType;
 	f32 speed;

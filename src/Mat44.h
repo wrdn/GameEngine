@@ -3,9 +3,8 @@
 #include "ctypes.h"
 #include "util.h"
 #include <iostream>
-
-class float4;
-class float3;
+#include "float4.h"
+#include "float3.h"
 
 enum Mat44Index
 {
@@ -73,6 +72,7 @@ public:
 	static const Mat44 IDENTITY;
 
 	const f32* GetMatrix() const;
+
 	void SetMatrix(const f32* _mat) const;
 
 	void SetMatrix(const f32 m11, const f32 m12, const f32 m13, const f32 m14,
@@ -104,13 +104,29 @@ public:
 
 	void write(std::ostream &out);
 
-	static Mat44 BuildRotationMatrix(f32 angle_in_degrees, f32 x, f32 y, f32 z);
-	static Mat44 BuildScaleMatrix(f32 xscale, f32 yscale, f32 zscale);
+	static Mat44 BuildTranslationMatrix(const f32 x, const f32 y, const f32 z);
+	static Mat44 BuildRotationMatrix(const f32 angle_in_degrees, const f32 x, const f32 y, const f32 z);
+	static Mat44 BuildRotationMatrix(const f32 angle_in_degrees, const float3 &axis);
+	static Mat44 BuildScaleMatrix(const f32 xscale, const f32 yscale, const f32 zscale);
 
 	// modifies only the elements for the scale matrix (assumes rest is identity)
-	static void BuildScaleMatrix(f32 xscale, f32 yscale, f32 zscale, Mat44 &out);
+	static void BuildScaleMatrix(const f32 xscale, const f32 yscale, const f32 zscale, Mat44 &out);
 
 	const float3 GetTranslationFromMatrix() const;
+
+	inline const Mat44& operator+=(const Mat44 &rhs) { *this = Add(rhs); return *this; }
+	inline const Mat44& operator-=(const Mat44 &rhs) { *this = Sub(rhs); return *this; }
+	inline const Mat44& operator*=(const Mat44 &rhs) { *this = Mult(rhs); return *this; } // matrix-matrix mult
+	inline const Mat44& operator*=(const f32 &rhs) { *this = Mult(rhs); return *this; } // scale
 };
+
+inline Mat44 operator+(const Mat44 &a, const Mat44 &b) { return Mat44(a)+=b; }
+inline Mat44 operator-(const Mat44 &a, const Mat44 &b) { return Mat44(a)-=b; }
+inline Mat44 operator*(const Mat44 &a, const Mat44 &b) { return Mat44(a)*=b; }
+inline Mat44 operator*(const Mat44 &a, const f32 &b) { return Mat44(a)*=b; }
+inline float4 operator*(const Mat44 &a, const float4 &b) { return a.Mult(b); }
+
+inline Mat44 operator*(const f32 &a, const Mat44 &b) { return Mat44(b)*=a; }
+inline float4 operator*(const float4 &a, const Mat44 &b) { return b.Mult(a); }
 
 std::ostream& operator<<(std::ostream &out, Mat44 &m);

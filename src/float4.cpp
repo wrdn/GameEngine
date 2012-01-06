@@ -182,17 +182,6 @@ float4 float4::normalize() const
 	return float4(vec[0]*recip, vec[1]*recip, vec[2]*recip, vec[3]*recip);
 };
 
-void float4::normalize()
-{
-	f32 lsqr = LengthSquared();
-	if(NearZero(lsqr)) { *this = ZERO; };
-	f32 recip = InvSqrt(lsqr);
-	vec[0] *= recip;
-	vec[1] *= recip;
-	vec[2] *= recip;
-	vec[3] *= recip;
-};
-
 float4 float4::negate() const
 {
 	return float4(

@@ -70,7 +70,6 @@ public:
 	void cross(const float3 &v, f32 * const output3d) const;
 
 	float3 normalize() const;
-	void normalize();
 
 	f32 magnitude() const;
 	f32 LengthSquared() const;
