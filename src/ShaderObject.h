@@ -1,3 +1,5 @@
+#pragma once
+
 #include <GL/glew.h>
 
 #include "ctypes.h"
@@ -32,7 +34,7 @@ public:
 	void PrintShaderLog(std::ostream &out);
 
 	ShaderType GetShaderType() const { return shaderType; }
-	const GLint GetShaderID() const { return shaderID; }
+	GLint GetShaderID() const { return shaderID; }
 	bool ShaderCompiled() const { return hasCompiled; }
 
 	ShaderObject() : shaderType(GLInvalidShader), shaderID(-1), hasCompiled(false) {};

@@ -20,9 +20,9 @@ class ShaderSet
 	inline bool CreateProgram(const ShaderObject *vertShader, ShaderObject *fragShader);
 	void Cleanup(); // deletes the program, sets linked to false, and nulls the vert+frag ShaderObject pointers
 
-	const GLint GetShaderProgramID() const { return shaderProgramID; }
-	const ShaderObject* const GetVertexShader() const { return vertexShader; }
-	const ShaderObject* const GetFragmentShader() const { return fragmentShader; }
+	GLint GetShaderProgramID() const { return shaderProgramID; }
+	const ShaderObject* GetVertexShader() const { return vertexShader; }
+	const ShaderObject* GetFragmentShader() const { return fragmentShader; }
 
 	ShaderSet() : shaderProgramID(-1), linked(false), vertexShader(0), fragmentShader(0) {};
 };

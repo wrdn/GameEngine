@@ -1,4 +1,5 @@
 #include "Quaternion.h"
+#include <cmath>
 
 Quaternion::Quaternion() { set(0); };
 

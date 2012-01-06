@@ -35,11 +35,11 @@ private:
 
 public:
 	// Global
-	const u32 GetMaxMemoryAlloc() const { return maxMemoryAlloc; }
+	u32 GetMaxMemoryAlloc() const { return maxMemoryAlloc; }
 	const vec2i& GetResolution() const { return resolution; }
 
 	// Cameras
-	const u32 GetActiveCameraIndex() const { return activeCameraIndex; }
+	u32 GetActiveCameraIndex() const { return activeCameraIndex; }
 	const std::vector<Camera> &GetCameras() const { return cameras; }
 
 	// Lights

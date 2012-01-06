@@ -1,8 +1,11 @@
+#ifdef _WIN32
 #pragma warning (disable : 4505) // used to disable warning from glut code
+#endif
 
 #include <iostream>
 #include <stdio.h>
 #include <assert.h>
+#include <cmath>
 
 #include "util.h"
 #include "PerfTimer.h"

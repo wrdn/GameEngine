@@ -1,5 +1,6 @@
 #include "ShaderObject.h"
 #include <iostream>
+#include <string.h>
 
 inline bool ShaderObject::Init(ShaderType _shaderType)
 {

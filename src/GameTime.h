@@ -45,9 +45,9 @@ private:
 public:
 	GameTime() : currentTime(0), oldTime(0), deltaTime(0) {};
 
-	const f32 GetCurrentTime() const { return currentTime; }
-	const f32 GetOldTime() const { return oldTime; }
-	const f32 GetDeltaTime() const { return deltaTime; }
+	f32 GetCurrentTime() const { return currentTime; }
+	f32 GetOldTime() const { return oldTime; }
+	f32 GetDeltaTime() const { return deltaTime; }
 
 	void Init()
 	{
@@ -63,10 +63,10 @@ public:
 		currentTime = (f32)GetTime();
 		deltaTime = currentTime - oldTime;
 
-		//if(deltaTime > TargetTime)
-		//{
-		//	deltaTime = TargetTime;
-		//}
+		if(deltaTime > TargetTime)
+		{
+			deltaTime = TargetTime;
+		}
 
 		oldTime = currentTime;
 		//return deltaTime;
