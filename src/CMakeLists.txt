@@ -5,9 +5,33 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../")
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
-# EXECUTABLE (GENERAL)
-set(source_files main.cpp AppConfig.cpp AppConfig.h ctypes.h float2.cpp float2.h float3.cpp float3.h float4.cpp float4.h Mat44.cpp Mat44.h strutils.cpp strutils.h util.cpp util.h
-PerfTimer.cpp PerfTimer.h EngineConfig.cpp EngineConfig.h color.h)
+# maths
+set(math_headers float2.h float3.h float4.h Quaternion.h Mat44.h Quaternion.h)
+set(math_src float2.cpp float3.cpp float4.cpp Mat44.cpp Quaternion.cpp)
+
+# shading
+set(shading_headers ShaderObject.h ShaderSet.h Light.h color.h Camera.h)
+set(shading_src ShaderObject.cpp ShaderSet.cpp Camera.cpp)
+
+# utilities
+set(util_headers ctypes.h strutils.h util.h AppConfig.h EngineConfig.h Namable.h GameTime.h PerfTimer.h)
+set(util_src strutils.cpp util.cpp AppConfig.cpp EngineConfig.cpp PerfTimer.cpp)
+
+# other non categorised files
+set(others main.cpp)
+
+# use the lists to make groups from
+source_group("Header Files\\Math" FILES ${math_headers})
+source_group("Header Files\\Shading" FILES ${shading_headers})
+source_group("Header Files\\Utilities" FILES ${util_headers})
+
+source_group("Source Files\\Math" FILES ${math_src})
+source_group("Source Files\\Shading" FILES ${shading_src})
+source_group("Source Files\\Utilities" FILES ${util_src})
+
+# concatenate the lists
+set(source_files ${math_headers} ${math_src} ${shading_headers} ${shading_src} ${util_headers} ${util_src} ${others})
+
 add_executable("${PROJECT_NAME}" ${source_files})
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")

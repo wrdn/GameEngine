@@ -54,6 +54,10 @@ void float4::set(const f32 x, const f32 y, const f32 z, const f32 w)
 	vec[2] = z;
 	vec[3] = w;
 };
+void float4::set(const f32 v)
+{
+	vec[0] = vec[1] = vec[2] = vec[3] = v;
+};
 
 void float4::zero() { setall(0); };
 

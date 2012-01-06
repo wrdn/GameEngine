@@ -3,13 +3,16 @@
 #include "ctypes.h"
 #include <iosfwd>
 
-struct Vec2i
+struct vec2i
 {
 public:
 	i32 x,y;
-	Vec2i() : x(0), y(0) { };
-	Vec2i(i32 _x, i32 _y): x(_x), y(_y) { };
+	vec2i() : x(0), y(0) { };
+	vec2i(i32 _x, i32 _y): x(_x), y(_y) { };
+
+	void set(i32 _x, i32 _y) { x=_x; y=_y; }
 };
+std::istream& operator>>(std::istream &in, vec2i& out);
 
 class float2
 {

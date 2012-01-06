@@ -3,13 +3,12 @@
      Note many things are given a "name". These should be converted to lowercase then hashed.
      In the debug build, the hash and original string should be stored
      In many cases, there may be valid and invalid values. If an invalid value is found, we may use a default value.
-     We will also log the information to warn that an invalid value was specified.
-	 Where necessary, colours should be specified with values in 0 to 255 range (for simplicity). The application will then normalize
-	 them into the 0 to 1 range.
+     We will also log the information to warn that an invalid value was specified
      -->
 <engine version="1.0">
   <global>
     <MaxMemory>256</MaxMemory> <!-- Max memory we can use in MegaBytes. To avoid problems if very small value specified, engine defines a minimum (128MB) -->
+	<resolution>640 480</resolution>
   </global> <!-- Global engine properties -->
   
   <!-- List of cameras. Active (first) camera also specified (only needed if >1 camera). If >1 camera and
@@ -42,7 +41,7 @@
   </keybinding> <!-- Key bindings (keys associated with Action strings that are well known by the application) -->
   <lights>
 	<light> <!-- position w 0||1 for directional/point light respectively -->
-      <position>x y z w</position>
+      <position>0.5 0.3 1.5 0.9</position>
       <spot_direction>x y z</spot_direction> <!-- If found, the light is interpreted as a spotlight. position.w forced to 1 -->
       <spot_cutoff>angle</spot_cutoff> <!-- If found, the light is interpreted as a spotlight. position.w forced to 1 -->
 	  <amb>r g b a</amb>
@@ -60,20 +59,20 @@
     <ShaderPair name="PhongShaderSet">
       <VertexShaderName>PhongVertexShader</VertexShaderName>
       <FragmentShaderName>PhongFragShader</FragmentShaderName>
-      <uniform name="BaseTexture" type="int">0</uniform> <!-- Specifying the unit to use for texture -->
-      <uniform name="BumpTexture" type="int">1</uniform>
-      <uniform name="IntegerForShader" type="int">10</uniform>
     </ShaderPair>
   </Shaders> <!-- <VertexShader id> and <FragmentShader id> and <ShaderPair> -->
   <Materials>
     <Material name="TestMaterial">
-      <ka>r g b</ka>
-      <kd>r g b</kd>
-      <ks>r g b</ks>
-      <Shader>PhongShaderSet</Shader>
+      <ka>r g b a</ka>
+      <kd>r g b a</kd>
+      <ks>r g b a</ks>
+      <Shader>PhongShaderSet</Shader> <!-- Name of ShaderPair -->
       <Texture unit="0"> <!-- unit (optional, default 0) is used to specify which texture unit it should be in. 0 to 7 valid (else default used). -->
         <filename>file.bmp</filename>
       </Texture>
+	  <uniform name="BaseTexture" type="int">0</uniform> <!-- Set uniforms in the Material -->
+      <uniform name="BumpTexture" type="int">1</uniform>
+      <uniform name="IntegerForShader" type="int">10</uniform>
     </Material>
   </Materials> <!-- Each material has: id, ka,kd,ks, diffuse texture (optional), bump texture (optional), shader -->
   <!-- Contains <mesh>'s. position, rotation, scale, associated material, filename (may denote for example, an OBJ file. If md5 file, we may load skeleton).

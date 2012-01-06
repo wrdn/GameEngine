@@ -48,6 +48,7 @@ public:
 	void zero(); // zero's the current vector
 	void setall(const f32 v);
 	void set(const f32 x, const f32 y, const f32 z, const f32 w);
+	void set(const f32 v);
 
 	float4 add(const float4 &v) const;
 	float4 sub(const float4 &v) const;

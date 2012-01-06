@@ -1,69 +1,23 @@
 #pragma once
-#include "ctypes.h"
+#include "color.h"
+#include "Light.h"
+#include "Camera.h"
+#include "float2.h"
 #include <rapidxml.hpp>
 #include <string>
-#include "float3.h"
-#include "color.h"
 #include <vector>
-
-class Namable // Debug functionality - inherited item can be given a name (useful for debugging)
-{
-#ifdef _DEBUG
-private:
-	std::string name;
-public:
-	inline void SetName(const std::string &m) { name = m; };
-	inline const std::string &GetName() { return name; };
-#else
-public:
-	inline void SetName(const std::string &m) { if(m.size()){} };
-	inline const std::string GetName() { return ""; };
-#endif
-};
-
-#define EngineConfigVersion "1.0" // config "version" flag must equal this
-#define MINIMUM_MEMORY_ALLOC 128U // note: "U" denotes unsigned integer
-
-enum CameraProjectionType { Perspective, Orthographic };
-class Camera : public Namable
-{
-public:
-	f32 fov, nearPlane, farPlane;
-	float3 position, target, up;
-	bool isStatic;
-	CameraProjectionType projectionType;
-
-	Camera() : fov(45), nearPlane(0.1f), farPlane(100), position(0,0,0), target(0,0,-1), up(0,1,0), isStatic(false), projectionType(Perspective) {};
-	Camera(const f32 _fov, const f32 _near, const f32 _far, const float3& _position, const float3& _target, const float3& _up, bool _isStatic, CameraProjectionType ptype)
-		: fov(_fov), nearPlane(_near), farPlane(_far), position(_position), target(_target), up(_up), isStatic(_isStatic), projectionType(ptype) {};
-};
-
-enum LightType { Point, Directional, Spot };
-class Light
-{
-public:
-	LightType lightType;
-	color ambientColor, diffuseColor, specularColor; // shared by all lights 
-	float4 position; // point/directional light (w=1|0 respectively)
-	float3 spotDirection; f32 spotCutoffAngle; // spotlights only
-
-	Light() : lightType(Directional), ambientColor(GREY), diffuseColor(GREY), specularColor(GREY), position(), spotDirection(), spotCutoffAngle(20) {}; // default parameters (empty constructor)
-	
-	Light(LightType _lightType, const color &amb, const color &diff, const color &spec, const float4& pos) // point/directional light (colors + position)
-		: lightType(_lightType), ambientColor(amb), diffuseColor(diff), specularColor(spec), position(pos), spotDirection(), spotCutoffAngle(20) {};
-
-	Light(LightType _lightType, const color &amb, const color &diff, const color &spec, const float4& pos, const float3& spotDir, const f32 spotCutoff) // spotlight (colors + position + spot direction + cutoff)
-		: lightType(_lightType), ambientColor(amb), diffuseColor(diff), specularColor(spec), position(pos), spotDirection(spotDir), spotCutoffAngle(spotCutoff) {};
-	
-	~Light() {};
-};
 
 class EngineConfig // parses the engine/scene config file
 {
 private:
+	static const u32 MINIMUM_MEMORY_ALLOC = 128U;
+	static const c8* EngineConfigVersion; // 1.0
+	static const u32 DEFAULT_RES_WIDTH = 640U, DEFAULT_RES_HEIGHT = 480U;
+
 	// [Global Engine Options]
 	u32 maxMemoryAlloc; // max memory the engine can use in MB (default=128MB)
-	
+	vec2i resolution;
+
 	// [Camera Options]
 	u32 activeCameraIndex; // clamp to [0, cameras.size()-1]
 	std::vector<Camera> cameras;
@@ -80,8 +34,20 @@ private:
 	void ParseLights(rapidxml::xml_node<> *base_lights_node);
 
 public:
+	// Global
+	const u32 GetMaxMemoryAlloc() const { return maxMemoryAlloc; }
+	const vec2i& GetResolution() const { return resolution; }
+
+	// Cameras
+	const u32 GetActiveCameraIndex() const { return activeCameraIndex; }
+	const std::vector<Camera> &GetCameras() const { return cameras; }
+
+	// Lights
+	const std::vector<Light>& GetLights() const { return lights; }
+
 	bool ParseConfigFile(const c8* xml_config_filename);
 
-	EngineConfig() : maxMemoryAlloc(MINIMUM_MEMORY_ALLOC), activeCameraIndex(0) {};
+	EngineConfig()
+		: maxMemoryAlloc(MINIMUM_MEMORY_ALLOC), resolution(DEFAULT_RES_WIDTH, DEFAULT_RES_HEIGHT), activeCameraIndex(0) {};
 	~EngineConfig() {};
 };

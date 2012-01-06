@@ -4,9 +4,12 @@
 #include <sstream> // helps with streaming into types
 #include <string.h>
 #include "float4.h"
+#include "float2.h"
 
 using namespace std;
 using namespace rapidxml;
+
+const c8* EngineConfig::EngineConfigVersion = "1.0";
 
 #define CASE_INSENSITIVE 0U,false // used in first_node, first_attribute etc.
 #define CASE_SENSITIVE 0U,true
@@ -153,8 +156,13 @@ void EngineConfig::ParseGlobalOptions(rapidxml::xml_node<> *base_global_node)
 
 	i32 tmpint;
 	if(_xml_parse_v<i32>(base_global_node->first_node("MaxMemory"), tmpint))
-	{
 		maxMemoryAlloc = (u32)max(tmpint, (i32)maxMemoryAlloc);
+
+	vec2i res;
+	if(_xml_parse_v<vec2i>(base_global_node->first_node("resolution"), res))
+	{
+		if(res.x > 0) resolution.x = res.x;
+		if(res.y > 0) resolution.y = res.y;
 	}
 };
 

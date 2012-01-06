@@ -39,6 +39,10 @@ public:
 		vec[1] = v[1];
 		vec[2] = v[2];
 	};
+	void set(const f32 v)
+	{
+		vec[0] = vec[1] = vec[2] = v;
+	};
 
 	~float3();
 	float3(); // sets all to 0

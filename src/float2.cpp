@@ -115,3 +115,11 @@ std::istream& operator>>(std::istream &in, float2& out)
 	out.set(x, y);
 	return in;
 };
+
+std::istream& operator>>(std::istream &in, vec2i& out)
+{
+	i32 x,y;
+	in >> x >> y;
+	out.set(x,y);
+	return in;
+};
