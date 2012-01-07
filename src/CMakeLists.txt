@@ -6,7 +6,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/../")
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 # maths
-set(math_headers float2.h float3.h float4.h Quaternion.h Mat44.h Quaternion.h)
+set(math_headers float2.h float3.h float4.h Quaternion.h Mat44.h Quaternion.h float4_sse.h)
 set(math_src float2.cpp float3.cpp float4.cpp Mat44.cpp Quaternion.cpp)
 
 # shading
