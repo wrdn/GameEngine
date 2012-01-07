@@ -17,24 +17,68 @@
 
 #include "Quaternion.h"
 
-void cube();
-void setup_lights();
-
+void keyb(uc8 vkey, i32 x, i32 y);
+void display();
+void idle();
+void reshape (i32 width, i32 height);
+void mouseFunction(i32 mouseX, i32 mouseY);
+void OnMouseMotion(i32 mouseX, i32 mouseY);
+void OnMouseButton(i32 glutButton, i32 glutState, i32 mouseX, i32 mouseY);
+void OnSpecialEvent(i32 glutKey, i32 mouseX, i32 mouseY);
+int main(i32 argc, c8 **argv);
+void TW_CALL SetTeapotInterpolationFactor(const void *value, void *clientData);
+void TW_CALL GetTeapotInterpolationFactor(void *value, void *clientData);
 void setup_anttweakbar();
-
+void setup_lights();
+void cube();
 
 GameTime gt;
 Camera c;
 TwBar *mainBar;
-f32 teapotRotationInterpolationFactor=0;
+f32 teapotRotationInterpolationFactor=0; bool automaticTeapotRotation=true;
+bool mouseRotateCamera = true; // set to false to disable mouse tracking (allowing mouse to be placed anywhere in window)
 
 Quaternion originTeapotRotation;
 Quaternion finalTeapotRotation;
 
-void keyb(uc8 _key, i32 x, i32 y)
+void keyb(uc8 vkey, i32 x, i32 y)
 {
-	if(x||y){} uc8 key = (uc8)tolower(_key);
-	if(key == 'q') { glutLeaveMainLoop(); return; }
+	if(x||y){} uc8 key = (uc8)tolower(vkey);
+	if(key == 27) { glutLeaveMainLoop(); return; } // escape key
+
+	else if(key == 'r')
+	{
+		mouseRotateCamera = !mouseRotateCamera;
+		const i32 midx = glutGet(GLUT_WINDOW_WIDTH)/2, midy = glutGet(GLUT_WINDOW_HEIGHT)/2;
+		glutWarpPointer(midx, midy);
+		return;
+	}
+	else if(key == 'w') // move cam 'forwards'
+	{
+		c.position += c.target * 15 * gt.GetDeltaTime();
+	}
+	else if(key == 's') // move cam 'backwards'
+	{
+		c.position -= c.target * 15 * gt.GetDeltaTime();
+	}
+	else if(key == 'a')
+	{
+		float3 right = c.target.cross(c.up);
+		c.position -= right * 15 * gt.GetDeltaTime();
+	}
+	else if(key == 'd')
+	{
+		float3 right = c.target.cross(c.up);
+		c.position += right * 15 * gt.GetDeltaTime();
+	}
+	else if(key == 'q')
+	{
+		c.position += c.up * 15 * gt.GetDeltaTime();
+	}
+	else if(key == 'e')
+	{
+		c.position -= c.up * 15 * gt.GetDeltaTime();
+	}
 };
 
 f32 angle=0, ltangle=0;
@@ -48,8 +92,12 @@ void display()
 	glPushMatrix();
 
 	f32 dt = gt.Update();
-	gluLookAt(c.position.x(), c.position.y(), c.position.z(),
+	/*gluLookAt(c.position.x(), c.position.y(), c.position.z(),
 		c.target.x(), c.target.y(), c.target.z(),
+		c.up.x(), c.up.y(), c.up.z());*/
+	float3 ntarg = c.position + c.target.normalize(); ntarg.normalize();
+	gluLookAt(c.position.x(), c.position.y(), c.position.z(),
+		ntarg.x(), ntarg.y(), ntarg.z(),
 		c.up.x(), c.up.y(), c.up.z());
 	
 	setup_lights();
@@ -73,7 +121,7 @@ void display()
 	glTranslatef(0,0,-6); Quaternion q;
 	q = originTeapotRotation.lerp(finalTeapotRotation, teapotRotationInterpolationFactor);
 	q = originTeapotRotation.slerp(finalTeapotRotation, teapotRotationInterpolationFactor);
-	teapotRotationInterpolationFactor += dt * mfactor;
+	if(automaticTeapotRotation) { teapotRotationInterpolationFactor += dt * mfactor; }
 	if(teapotRotationInterpolationFactor>1 || teapotRotationInterpolationFactor<0) mfactor=-mfactor;
 	glMultMatrixf(q.ToMat44().Transpose().GetMatrix());
 
@@ -95,9 +143,20 @@ void display()
 
 	glPushMatrix();
 	glDisable(GL_LIGHTING);
-	glTranslatef(0,0,-15);
-	glScalef(2,2,2);
-	cube();
+	//glTranslatef(0,0,-15);
+	glScalef(10,10,10);
+	//cube();
+	glPopMatrix();
+
+	glPushMatrix();
+	glScalef(5,5,5);
+	glTranslatef(0,-1,0);
+	glBegin(GL_QUADS);
+	glVertex3f(-1,0,-1);
+	glVertex3f(1,0,-1);
+	glVertex3f(1,0,1);
+	glVertex3f(-1,0,1);
+	glEnd();
 	glPopMatrix();
 
 
@@ -126,59 +185,57 @@ void reshape (i32 width, i32 height)
 	TwWindowSize(width,height);
 }
 
-void rotatecam(const f32 angle, const float3 &axis)
-{
-	Quaternion temp(axis.normalize(), DEGTORAD(angle));
-	Quaternion qview(c.target.normalize());
-	Quaternion qup(c.up.normalize());
-
-	Quaternion res = temp * qview * temp.conjugate();
-	c.target = res.tofloat3().normalize();
-
-	float3 right = c.target ^ c.up;
-	//c.up = c.target ^ right;
-
-	//c.up = (temp * qup * temp.conjugate()).tofloat3().normalize();
-};
-
 void mouseFunction(i32 mouseX, i32 mouseY)
 {
-	if(!TwEventMouseMotionGLUT(mouseX, mouseY)) { }
+	TwEventMouseMotionGLUT(mouseX, mouseY);
+	if(!mouseRotateCamera) return;
 
-	const int midx = glutGet(GLUT_WINDOW_WIDTH)/2, midy = glutGet(GLUT_WINDOW_HEIGHT)/2;
-	if(mouseX == midx && mouseY == midy) return;
-	glutWarpPointer(midx, midy);
+	const i32 MX = glutGet(GLUT_WINDOW_WIDTH)/2;
+	const i32 MY = glutGet(GLUT_WINDOW_HEIGHT)/2;
+	if(MX == mouseX && MY == mouseY) return;
 
-	float2 sensitivity(15,15);
+	const f32 rotationSpeedX = 10, rotationSpeedY = 15;
+	f32 mouseDiffX = ((f32)MX - (f32)mouseX) * rotationSpeedX * gt.GetDeltaTime();
+	f32 mouseDiffY = ((f32)MY - (f32)mouseY) * rotationSpeedY * gt.GetDeltaTime();
 
-	// get change in x and y
-	float2 mouseDelta(
-		(midx - mouseX)/sensitivity.x(),
-		(midy - mouseY)/sensitivity.y());
-	mouseDelta *= gt.GetDeltaTime();
-	//std::cout << mouseDelta.x() << " " << mouseDelta.y() << std::endl;
+	static f32 AccumPitchDegs = 0;
+	AccumPitchDegs += mouseDiffY;
+	if(AccumPitchDegs > 90.0f)
+	{
+		mouseDiffY = 90.0f - (AccumPitchDegs - mouseDiffY);
+		AccumPitchDegs = 90.0f;
+	}
+	else if(AccumPitchDegs < -90.0f)
+	{
+		mouseDiffY = -90.0f - (AccumPitchDegs - mouseDiffY);
+		AccumPitchDegs = -90.0f;
+	}
 
-	//c.up.set(0,1,0);
+	// Rotation around world y axis
+	float3 WORLD_UP(0,1,0);
+	Quaternion tempx(WORLD_UP, DEGTORAD(mouseDiffX)); // rotation around world up vector (0,1,0)
+	c.target = (tempx * c.target * tempx.conjugate()).tofloat3(); // same as calling tempx.rotate(c.target)
 
-	float3 axis = c.target - c.position;
-	axis = axis ^ c.up;
-	axis = axis.normalize();
+	// Rotation around world x axis
+	float3 WORLD_RIGHT = c.target.cross(c.up);
+	Quaternion tempy(WORLD_RIGHT, DEGTORAD(mouseDiffY));
+	Quaternion targQuat(c.target);
+	c.target = (targQuat * tempy).tofloat3();
 
-	rotatecam(mouseDelta.x(), c.up);
-	rotatecam(mouseDelta.y(), axis);
+	glutWarpPointer(MX, MY);
 };
 
 void OnMouseMotion(i32 mouseX, i32 mouseY)  // your callback function called by GLUT when mouse has moved
 {
-	if(!TwEventMouseMotionGLUT(mouseX, mouseY)) { }
+	TwEventMouseMotionGLUT(mouseX, mouseY);
 }
 void OnMouseButton(i32 glutButton, i32 glutState, i32 mouseX, i32 mouseY)
 {
-	if(!TwEventMouseButtonGLUT(glutButton, glutState, mouseX, mouseY)) { }
+	TwEventMouseButtonGLUT(glutButton, glutState, mouseX, mouseY);
 }
 void OnSpecialEvent(i32 glutKey, i32 mouseX, i32 mouseY)
 {
-	if(!TwEventSpecialGLUT(glutKey,mouseX,mouseY)) { }
+	TwEventSpecialGLUT(glutKey,mouseX,mouseY);
 }
 
 int main(i32 argc, c8 **argv)
@@ -214,6 +271,7 @@ int main(i32 argc, c8 **argv)
 	glutMotionFunc(OnMouseMotion);
 	glutMouseFunc(OnMouseButton);
 	glutSpecialFunc(OnSpecialEvent);
+	//glutSetCursor(GLUT_CURSOR_NONE);
 
 	setup_anttweakbar();
 	TwGLUTModifiersFunc(glutGetModifiers);
@@ -251,6 +309,7 @@ void setup_anttweakbar()
 	TwWindowSize(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
 	mainBar = TwNewBar("Main");
 	TwAddVarCB(mainBar, "Teapot Interpolation Factor", TW_TYPE_FLOAT, SetTeapotInterpolationFactor, GetTeapotInterpolationFactor, &teapotRotationInterpolationFactor, 0);
+	TwAddVarRW(mainBar, "Teapot Automatic Rotation", TW_TYPE_BOOL32, &automaticTeapotRotation, 0);
 };
 
 void setup_lights()

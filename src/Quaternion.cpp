@@ -141,7 +141,8 @@ float3 Quaternion::rotate(const float3& v) const
 	CHECK_NORMALISED(v.magnitude());
 
 	//             q *  Quaternion(vec)   *     q^-1
-	return this->mult( Quaternion(v).mult( this->conjugate() ) ).tofloat3();
+	//return this->mult( Quaternion(v).mult( this->conjugate() ) ).tofloat3();
+	return (*this * Quaternion(v) * this->conjugate()).tofloat3();
 };
 
 // lerp from 'this' to q using t
