@@ -1,7 +1,10 @@
 #pragma once
 #include <ctime>
 #include "ctypes.h"
+#include <stdio.h>
+#include <GL/freeglut.h>
 
+/*
 // GXBase timing code
 #ifdef __linux__
 #include <sys/time.h>
@@ -34,13 +37,46 @@ double GetDeltaTime()
 	timeOld = timeNow;
 	return delta;
 };
+*/
 
+const int FPS_TARGET = 60;
+const int SKIP_TICKS = 1000 / FPS_TARGET;
+
+
+class GameTime
+{
+private:
+	int old_time;
+	double dt;
+	int sleep_time;
+	DWORD nextTick;
+
+public:
+	GameTime() : old_time(0), dt(0), sleep_time(0),
+		nextTick(GetTickCount()) {};
+	~GameTime() {};
+
+	double Update()
+	{
+		nextTick += SKIP_TICKS;
+		sleep_time = nextTick - GetTickCount();
+		if(sleep_time >= 0) { Sleep(sleep_time); }
+		return 1.0 / FPS_TARGET;
+	};
+
+	double GetDeltaTime() { return 1.0 / FPS_TARGET; };
+};
+
+/*
 class GameTime
 {
 private:
 	f32 currentTime, oldTime, deltaTime;
 
 	clock_t lastTime, newTime;
+
+
+	int glut_oldtime;
 
 public:
 	GameTime() : currentTime(0), oldTime(0), deltaTime(0) {};
@@ -54,10 +90,20 @@ public:
 		currentTime = (f32)GetTime();
 		oldTime = currentTime;
 		deltaTime=0;
+
+		glut_oldtime = 0;
 	};
 
 	f32 Update() // updates time and returns dt
 	{
+		int timeSinceStart = glutGet(GLUT_ELAPSED_TIME);
+		int deltaTimev = timeSinceStart - glut_oldtime;
+		glut_oldtime = timeSinceStart;
+		deltaTime = deltaTimev * 0.001f;
+		return deltaTime;
+
+
+		
 		static const f32 TargetTime = 1.0f/30.0f; // target=30fps
 
 		currentTime = (f32)GetTime();
@@ -65,7 +111,7 @@ public:
 
 		if(deltaTime > TargetTime)
 		{
-			deltaTime = TargetTime;
+			//deltaTime = TargetTime;
 		}
 
 		oldTime = currentTime;
@@ -80,3 +126,4 @@ public:
 		return deltaTime;
 	};
 };
+*/

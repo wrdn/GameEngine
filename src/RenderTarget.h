@@ -74,9 +74,11 @@ public:
 		return CreateAndAttachTexture(GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT, GL_DEPTH_ATTACHMENT);
 	};
 
-	FBOTexture CreateColorTexture()
+	// note: for depth textures, there is only ever 1 attachment point (GL_DEPTH_ATTACHMENT), hence why CreateDepthTexture() takes no arguments
+	// in contrast, there can be many color attachments, from GL_COLOR_ATTACHMENT0+0 to GL_COLOR_ATTACHMENT0+GL_MAX_COLOR_ATTACHMENTS-1
+	FBOTexture CreateColorTexture(GLenum attachmentPoint)
 	{
-		return CreateAndAttachTexture(GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, GL_COLOR_ATTACHMENT0);
+		return CreateAndAttachTexture(GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, attachmentPoint);
 	};
 
 	FBOTexture CreateAndAttachTexture(GLint internal_format, GLenum format, GLenum type, GLenum attachmentPoint)

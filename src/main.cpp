@@ -1,12 +1,14 @@
 #ifdef _WIN32
 #pragma warning (disable : 4505) // used to disable warning from glut code
 #pragma warning (disable : 4702) // used to disable warning from glut code
+#pragma warning (disable : 4244) // used to disable warning from glut code
 #endif
 
 #include <iostream>
 #include <stdio.h>
 #include <assert.h>
 #include <cmath>
+#include <GL/glew.h>
 
 #include "util.h"
 #include "PerfTimer.h"
@@ -74,31 +76,55 @@ void keyb(uc8 vkey, i32 x, i32 y)
 	}
 	else if(key == 'w') // move cam 'forwards'
 	{
-		c.position += c.target * 15 * gt.GetDeltaTime();
+		c.position += c.target * gt.GetDeltaTime();
 	}
 	else if(key == 's') // move cam 'backwards'
 	{
-		c.position -= c.target * 15 * gt.GetDeltaTime();
+		c.position -= c.target * (f32)gt.GetDeltaTime();
 	}
 	else if(key == 'a')
 	{
 		float3 right = c.target.cross(c.up);
-		c.position -= right * 15 * gt.GetDeltaTime();
+		c.position -= right * (f32)gt.GetDeltaTime();
 	}
 	else if(key == 'd')
 	{
 		float3 right = c.target.cross(c.up);
-		c.position += right * 15 * gt.GetDeltaTime();
+		c.position += right * (f32)gt.GetDeltaTime();
 	}
 	else if(key == 'q')
 	{
-		c.position += c.up * 15 * gt.GetDeltaTime();
+		c.position += c.up * (f32)gt.GetDeltaTime();
 	}
 	else if(key == 'e')
 	{
-		c.position -= c.up * 15 * gt.GetDeltaTime();
+		c.position -= c.up * (f32)gt.GetDeltaTime();
 	}
 };
+
+void floor()
+{
+	glPushMatrix();
+	//glScalef(0.5,0.5,0.5);
+
+	glBegin(GL_QUADS);
+	glNormal3f(0.0f, 1.0f, 0.0f);
+
+	glTexCoord2f(0,0);
+	glVertex3f(-10.0f,0.0f,10.0f);
+
+	glTexCoord2f(1,0);
+	glVertex3f(10.0f,0.0f,10.0f);
+
+	glTexCoord2f(1,1);
+	glVertex3f(10.0f,0.0f,-10.0f);
+
+	glTexCoord2f(0,1);
+	glVertex3f(-10.0f,0.0f,-10.0f);
+	glEnd();
+
+	glPopMatrix();
+}
 
 f32 angle=0, ltangle=0;
 f32 mfactor=0.3f;
@@ -109,8 +135,9 @@ void standard_render_nofbo()
 	glEnable(GL_DEPTH_TEST);
 	glClearDepth(1.0f);
 
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_FRONT);
+	glDisable(GL_CULL_FACE);
+	//glEnable(GL_CULL_FACE);
+	//glCullFace(GL_FRONT); // < required for the glutSolidTeapot() as its faces are the wrong order
 
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glLoadIdentity();
@@ -126,14 +153,21 @@ void standard_render_nofbo()
 	basicTexturingShader->Activate();
 
 	glPushMatrix();
-	glTranslatef(0,0,-6);
-	glRotatef(angle,0,1,0);
-	glColor3f(1,0,0);
-	glutSolidTeapot(1.0f);
+	glScaled(0.1,0.1,0.1);
+	glTranslatef(0,0,-2.5);
+	cube();
 	glPopMatrix();
 
+	glPushMatrix();
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glTranslated(0,-0.1,0);
+	glScaled(0.05,0.05,0.05);
+	glColor3f(0,1,0);
+	floor();
+	glPopMatrix();
 
 	basicTexturingShader->Deactivate();
+	test_texture->Deactivate();
 
 	glPopMatrix();
 	
@@ -141,19 +175,102 @@ void standard_render_nofbo()
 	glutSwapBuffers();
 };
 
+void draw_fullscreen_quad()
+{
+	// save modelview and projection matrix
+	f32 modelviewmatrix[16], projectionmatrix[16];
+	glGetFloatv(GL_MODELVIEW_MATRIX, modelviewmatrix);
+	glGetFloatv(GL_PROJECTION_MATRIX, projectionmatrix);
+
+	// draw fullscreen quad
+	glMatrixMode (GL_MODELVIEW);
+	glPushMatrix ();
+	glLoadIdentity ();
+	glMatrixMode (GL_PROJECTION);
+	glPushMatrix ();
+	glLoadIdentity ();
+	glBegin (GL_QUADS);
+	glTexCoord2f(0,0); glVertex3i (-1, -1, -1);
+	glTexCoord2f(1,0); glVertex3i (1, -1, -1);
+	glTexCoord2f(1,1); glVertex3i (1, 1, -1);
+	glTexCoord2f(0,1); glVertex3i (-1, 1, -1);
+	glEnd ();
+	glPopMatrix ();
+	glPopMatrix ();
+
+	// Reload projection and modelview matrix
+	glLoadIdentity();
+	glLoadMatrixf(projectionmatrix);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glLoadMatrixf(modelviewmatrix);
+};
+
 GLenum fboBuff[] = { GL_COLOR_ATTACHMENT0 };
-GLenum windowBuff[] = { GL_BACK_LEFT };
+GLenum windowBuff[] = { GL_BACK };
 
 FBOTexture colorTex;
 
 void render_thru_fbo()
 {
-	glClearDepth(1.0f);
-	
-	glActiveTexture(GL_TEXTURE0);
+	glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, 0);
+
+	// Bind FBO
+	ptarg->Bind();
+
+	// setup draw buffers/viewport etc
+	glDrawBuffers(1, fboBuff); // only required if rendering to >1 buffer
+	glViewport(0,0,colorTex.width, colorTex.height);
+	glClearColor(0,0,0,1);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	 
+	glMatrixMode(GL_PROJECTION); glLoadIdentity();
+	gluPerspective(45, windowWidth/windowHeight,0.3,200);
+	glMatrixMode(GL_MODELVIEW); glLoadIdentity();
+
+	// setup camera
+	float3 ntarg = c.position + c.target.normalize(); ntarg.normalize();
+	gluLookAt(c.position.x(), c.position.y(), c.position.z(), ntarg.x(), ntarg.y(),
+		ntarg.z(), c.up.x(), c.up.y(), c.up.z());
+
+	// Draw stuff . . .
+	glPushMatrix();
+	glTranslatef(-1,0,-6);
+	glColor3f(1,0,0);
+	glRotatef(angle, 0,1,0);
+	test_texture->Activate();
+	glCullFace(GL_FRONT);
+	glutSolidTeapot(1);
+	glCullFace(GL_BACK);
+	test_texture->Deactivate();
+	glPopMatrix();
+
+	// Unbind FBO
+	ptarg->Unbind();
+
+	// set viewport, clear colors etc
+	glDrawBuffers(1, windowBuff);
+	glViewport(0,0,windowWidth,windowHeight);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// draw fullscreen quad with renderbuffer (test)
+	glEnable(GL_TEXTURE_2D); glBindTexture(GL_TEXTURE_2D, colorTex.texID);
+	draw_fullscreen_quad();
 	glBindTexture(GL_TEXTURE_2D, 0);
+
+	angle += 0.06f;
+	glutSwapBuffers();
+};
+
+void render_thru_fbo2()
+{
+	glClearDepth(1.0f);
 	glEnable(GL_DEPTH_TEST);
 
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	
+	
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_FRONT);
 
@@ -162,7 +279,7 @@ void render_thru_fbo()
 
 	glViewport(0,0,colorTex.width, colorTex.height);
 
-	glClearColor(0,1,1,1);
+	glClearColor(0,0,0,1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glMatrixMode(GL_PROJECTION);
@@ -247,7 +364,7 @@ void display()
 
 	glPushMatrix();
 
-	f32 dt = gt.Update();
+	double dt = gt.Update();
 	float3 ntarg = c.position + c.target.normalize(); ntarg.normalize();
 	gluLookAt(c.position.x(), c.position.y(), c.position.z(),
 		ntarg.x(), ntarg.y(), ntarg.z(),
@@ -274,7 +391,7 @@ void display()
 	glTranslatef(0,0,-6); Quaternion q;
 	q = originTeapotRotation.lerp(finalTeapotRotation, teapotRotationInterpolationFactor);
 	q = originTeapotRotation.slerp(finalTeapotRotation, teapotRotationInterpolationFactor);
-	if(automaticTeapotRotation) { teapotRotationInterpolationFactor += dt * mfactor; }
+	if(automaticTeapotRotation) { teapotRotationInterpolationFactor += (f32)dt * mfactor; }
 	if(teapotRotationInterpolationFactor>1 || teapotRotationInterpolationFactor<0) mfactor=-mfactor;
 	glMultMatrixf(q.ToMat44().Transpose().GetMatrix());
 
@@ -318,12 +435,19 @@ void display()
 
 	glPopMatrix();
 
-	angle += 25 * dt;
-	ltangle += 0.1f * dt;
+	angle += 25 * (f32)dt;
+	ltangle += 0.1f * (f32)dt;
 	glutSwapBuffers();
 }
 void idle()
 {
+	gt.Update();
+
+	c.speed = 10;
+	c.position.set(1.3301499f, 1.2321359f, 1.3202831f);
+	c.target.set(-0.54143202f, -0.44914651f, -0.66071594f);
+	c.up.set(0,1,0);
+
 	glutPostRedisplay();
 }
 
@@ -354,8 +478,8 @@ void mouseFunction(i32 mouseX, i32 mouseY)
 	if(MX == mouseX && MY == mouseY) return;
 
 	const f32 rotationSpeedX = 10, rotationSpeedY = 15;
-	f32 mouseDiffX = ((f32)MX - (f32)mouseX) * rotationSpeedX * gt.GetDeltaTime();
-	f32 mouseDiffY = ((f32)MY - (f32)mouseY) * rotationSpeedY * gt.GetDeltaTime();
+	f32 mouseDiffX = ((f32)MX - (f32)mouseX) * rotationSpeedX * (f32)gt.GetDeltaTime();
+	f32 mouseDiffY = ((f32)MY - (f32)mouseY) * rotationSpeedY * (f32)gt.GetDeltaTime();
 
 	static f32 AccumPitchDegs = 0;
 	AccumPitchDegs += mouseDiffY;
@@ -407,12 +531,6 @@ int main(i32 argc, c8 **argv)
 	originTeapotRotation = Quaternion(float3(0,1,0), DEGTORAD(0));
 	finalTeapotRotation = Quaternion(float3(0,1,0), DEGTORAD(190));
 
-	Camera c;
-	c.speed = 10;
-	c.position.set(0.0f);
-	c.target.set(0,0,1);
-	c.up.set(0,1,0);
-
 	EngineConfig conf;
 	conf.ParseConfigFile("Data/config.xml");
 
@@ -442,22 +560,28 @@ int main(i32 argc, c8 **argv)
 
 	glewInit();
 
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
+	glEnable(GL_CULL_FACE); glEnable(GL_DEPTH_TEST);
 
 	ptarg = new RenderTarget(windowWidth, windowHeight);
 	ptarg->CreateDepthTexture();
-	colorTex = ptarg->CreateColorTexture();
+	colorTex = ptarg->CreateColorTexture(GL_COLOR_ATTACHMENT0);
 	
 	test_texture = texMan.LoadTextureFromFile("Data/test.jpg");
 
-	if(shaderMan.LoadShader(basicTexturingShaderID, "Data/Shaders/BasicTexturing.vert", "Data/Shaders/BasicTexturing.frag"))
+	if(shaderMan.LoadShader(basicTexturingShaderID, "Data/Shaders/WriteDepth.vert", "Data/Shaders/WriteDepth.frag"))
 	{
 		basicTexturingShader = shaderMan.GetShader(basicTexturingShaderID);
 		basicTexturingShader->SetUniform("baseMap", *test_texture);
 	}
 	
-	gt.Init();
+	glutWarpPointer(windowWidth/2, windowHeight/2); // make sure to do this before initialising the camera below (otherwise, the camera will immediately be placed somewhere random)
+
+	Camera c;
+	c.speed = 10;
+	c.position.set(1.3301499f, 1.2321359f, 1.3202831f);
+	c.target.set(-0.54143202f, -0.44914651f, -0.66071594f);
+	c.up.set(0,1,0);
+
 	gt.Update();
 
 	glutMainLoop();
@@ -508,38 +632,46 @@ void setup_lights()
 
 void cube()
 {
-		glBegin(GL_QUADS);		// Draw The Cube Using quads
-    glColor3f(0.0f,1.0f,0.0f);	// Color Blue
-    glVertex3f( 1.0f, 1.0f,-1.0f);	// Top Right Of The Quad (Top)
-    glVertex3f(-1.0f, 1.0f,-1.0f);	// Top Left Of The Quad (Top)
-    glVertex3f(-1.0f, 1.0f, 1.0f);	// Bottom Left Of The Quad (Top)
-    glVertex3f( 1.0f, 1.0f, 1.0f);	// Bottom Right Of The Quad (Top)
-    glColor3f(1.0f,0.5f,0.0f);	// Color Orange
-    glVertex3f( 1.0f,-1.0f, 1.0f);	// Top Right Of The Quad (Bottom)
-    glVertex3f(-1.0f,-1.0f, 1.0f);	// Top Left Of The Quad (Bottom)
-    glVertex3f(-1.0f,-1.0f,-1.0f);	// Bottom Left Of The Quad (Bottom)
-    glVertex3f( 1.0f,-1.0f,-1.0f);	// Bottom Right Of The Quad (Bottom)
-    glColor3f(1.0f,0.0f,0.0f);	// Color Red	
-    glVertex3f( 1.0f, 1.0f, 1.0f);	// Top Right Of The Quad (Front)
-    glVertex3f(-1.0f, 1.0f, 1.0f);	// Top Left Of The Quad (Front)
-    glVertex3f(-1.0f,-1.0f, 1.0f);	// Bottom Left Of The Quad (Front)
-    glVertex3f( 1.0f,-1.0f, 1.0f);	// Bottom Right Of The Quad (Front)
-    glColor3f(1.0f,1.0f,0.0f);	// Color Yellow
-    glVertex3f( 1.0f,-1.0f,-1.0f);	// Top Right Of The Quad (Back)
-    glVertex3f(-1.0f,-1.0f,-1.0f);	// Top Left Of The Quad (Back)
-    glVertex3f(-1.0f, 1.0f,-1.0f);	// Bottom Left Of The Quad (Back)
-    glVertex3f( 1.0f, 1.0f,-1.0f);	// Bottom Right Of The Quad (Back)
-    glColor3f(0.0f,0.0f,1.0f);	// Color Blue
-    glVertex3f(-1.0f, 1.0f, 1.0f);	// Top Right Of The Quad (Left)
-    glVertex3f(-1.0f, 1.0f,-1.0f);	// Top Left Of The Quad (Left)
-    glVertex3f(-1.0f,-1.0f,-1.0f);	// Bottom Left Of The Quad (Left)
-    glVertex3f(-1.0f,-1.0f, 1.0f);	// Bottom Right Of The Quad (Left)
-    glColor3f(1.0f,0.0f,1.0f);	// Color Violet
-    glVertex3f( 1.0f, 1.0f,-1.0f);	// Top Right Of The Quad (Right)
-    glVertex3f( 1.0f, 1.0f, 1.0f);	// Top Left Of The Quad (Right)
-    glVertex3f( 1.0f,-1.0f, 1.0f);	// Bottom Left Of The Quad (Right)
-    glVertex3f( 1.0f,-1.0f,-1.0f);	// Bottom Right Of The Quad (Right)
-  glEnd();			// End Drawing The Cube
+	glBegin(GL_QUADS);
+
+	// Front Face
+	glNormal3f(0.0f,0.0f,1.0f);
+	glTexCoord2d(0.0, 0.0);		glVertex3d(-1.0, -1.0,  1.0);
+	glTexCoord2d(1.0, 0.0);		glVertex3d( 1.0, -1.0,  1.0);
+	glTexCoord2d(1.0, 1.0);		glVertex3d( 1.0,  1.0,  1.0);
+	glTexCoord2d(0.0, 1.0);		glVertex3d(-1.0,  1.0,  1.0);
+	// Back Face
+	glNormal3f(0.0f,0.0f,-1.0f);
+	glTexCoord2d(1.0, 0.0);		glVertex3d(-1.0, -1.0, -1.0);
+	glTexCoord2d(1.0, 1.0);		glVertex3d(-1.0,  1.0, -1.0);
+	glTexCoord2d(0.0, 1.0);		glVertex3d( 1.0,  1.0, -1.0);
+	glTexCoord2d(0.0, 0.0);		glVertex3d( 1.0, -1.0, -1.0);
+	// Top Face
+	glNormal3f(0.0f,1.0f,0.0f);
+	glTexCoord2d(0.0, 1.0);		glVertex3d(-1.0,  1.0, -1.0);
+	glTexCoord2d(0.0, 0.0);		glVertex3d(-1.0,  1.0,  1.0);
+	glTexCoord2d(1.0, 0.0);		glVertex3d( 1.0,  1.0,  1.0);
+	glTexCoord2d(1.0, 1.0);		glVertex3d( 1.0,  1.0, -1.0);
+	// Bottom Face
+	glNormal3f(0.0f,-1.0f,0.0f);
+	glTexCoord2d(1.0, 1.0);		glVertex3d(-1.0, -1.0, -1.0);
+	glTexCoord2d(0.0, 1.0);		glVertex3d( 1.0, -1.0, -1.0);
+	glTexCoord2d(0.0, 0.0);		glVertex3d( 1.0, -1.0,  1.0);
+	glTexCoord2d(1.0, 0.0);		glVertex3d(-1.0, -1.0,  1.0);
+	// Right face
+	glNormal3f(1.0f,0.0f,0.0f);
+	glTexCoord2d(1.0, 0.0);		glVertex3d( 1.0, -1.0, -1.0);
+	glTexCoord2d(1.0, 1.0);		glVertex3d( 1.0,  1.0, -1.0);
+	glTexCoord2d(0.0, 1.0);		glVertex3d( 1.0,  1.0,  1.0);
+	glTexCoord2d(0.0, 0.0);		glVertex3d( 1.0, -1.0,  1.0);
+	// Left Face
+	glNormal3f(-1.0f,0.0f,0.0f);
+	glTexCoord2d(0.0, 0.0);		glVertex3d(-1.0, -1.0, -1.0);
+	glTexCoord2d(1.0, 0.0);		glVertex3d(-1.0, -1.0,  1.0);
+	glTexCoord2d(1.0, 1.0);		glVertex3d(-1.0,  1.0,  1.0);
+	glTexCoord2d(0.0, 1.0);		glVertex3d(-1.0,  1.0, -1.0);
+
+	glEnd();
 };
 
 	/*
