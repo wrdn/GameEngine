@@ -114,6 +114,12 @@ void standard_render_nofbo()
 
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glLoadIdentity();
+
+	float3 ntarg = c.position + c.target.normalize(); ntarg.normalize();
+	gluLookAt(c.position.x(), c.position.y(), c.position.z(),
+		ntarg.x(), ntarg.y(), ntarg.z(),
+		c.up.x(), c.up.y(), c.up.z());
+
 	glPushMatrix();
 
 	test_texture->Activate();
@@ -164,6 +170,11 @@ void render_thru_fbo()
 	gluPerspective(45, windowWidth/windowHeight,0.3,200);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+
+	float3 ntarg = c.position + c.target.normalize(); ntarg.normalize();
+	gluLookAt(c.position.x(), c.position.y(), c.position.z(),
+		ntarg.x(), ntarg.y(), ntarg.z(),
+		c.up.x(), c.up.y(), c.up.z());
 
 	glPushMatrix();
 	glTranslatef(-1,0,-6);
@@ -220,25 +231,7 @@ void render_thru_fbo()
 
 void display()
 {
-	/*glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glDisable(GL_CULL_FACE);
-	glEnable(GL_DEPTH_TEST);
-
-	glLoadIdentity();
-
-	test_texture->Activate();
-	basicTexturingShader->Activate();
-
-	glPushMatrix();
-	glTranslatef(0,0,-6);
-	glRotatef(angle,0,1,0);
-	glColor3f(1,1,0);
-	glutSolidTeapot(1.0f);
-	glPopMatrix();
-
-	angle += 0.06f;
-	glutSwapBuffers();
-	return;*/
+	gt.Update();
 
 	if(!fboactive)
 	{
@@ -255,9 +248,6 @@ void display()
 	glPushMatrix();
 
 	f32 dt = gt.Update();
-	/*gluLookAt(c.position.x(), c.position.y(), c.position.z(),
-		c.target.x(), c.target.y(), c.target.z(),
-		c.up.x(), c.up.y(), c.up.z());*/
 	float3 ntarg = c.position + c.target.normalize(); ntarg.normalize();
 	gluLookAt(c.position.x(), c.position.y(), c.position.z(),
 		ntarg.x(), ntarg.y(), ntarg.z(),
