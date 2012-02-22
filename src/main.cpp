@@ -1,5 +1,6 @@
 #ifdef _WIN32
 #pragma warning (disable : 4505) // used to disable warning from glut code
+#pragma warning (disable : 4702) // used to disable warning from glut code
 #endif
 
 #include <iostream>
@@ -12,10 +13,15 @@
 #include "EngineConfig.h"
 #include "GameTime.h"
 
+#include "RenderTarget.h"
+
 #include <GL/freeglut.h>
 #include <AntTweakBar.h>
 
 #include "Quaternion.h"
+
+#include "TextureManager.h"
+#include "ShaderManager.h"
 
 void keyb(uc8 vkey, i32 x, i32 y);
 void display();
@@ -41,10 +47,23 @@ bool mouseRotateCamera = true; // set to false to disable mouse tracking (allowi
 Quaternion originTeapotRotation;
 Quaternion finalTeapotRotation;
 
+RenderTarget *ptarg;
+int windowWidth, windowHeight;
+bool fboactive=false;
+
+Texture *test_texture;
+TextureManager texMan;
+
+ShaderManager shaderMan;
+
+u32 basicTexturingShaderID; Shader *basicTexturingShader;
+
 void keyb(uc8 vkey, i32 x, i32 y)
 {
 	if(x||y){} uc8 key = (uc8)tolower(vkey);
 	if(key == 27) { glutLeaveMainLoop(); return; } // escape key
+
+	else if(key == 'f') { fboactive = !fboactive; return; }
 
 	else if(key == 'r')
 	{
@@ -83,8 +102,152 @@ void keyb(uc8 vkey, i32 x, i32 y)
 
 f32 angle=0, ltangle=0;
 f32 mfactor=0.3f;
+
+void standard_render_nofbo()
+{
+	glClearColor(0,0,0,0);
+	glEnable(GL_DEPTH_TEST);
+	glClearDepth(1.0f);
+
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_FRONT);
+
+	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+	glLoadIdentity();
+	glPushMatrix();
+
+	test_texture->Activate();
+	basicTexturingShader->Activate();
+
+	glPushMatrix();
+	glTranslatef(0,0,-6);
+	glRotatef(angle,0,1,0);
+	glColor3f(1,0,0);
+	glutSolidTeapot(1.0f);
+	glPopMatrix();
+
+
+	basicTexturingShader->Deactivate();
+
+	glPopMatrix();
+	
+	angle += 0.03f;
+	glutSwapBuffers();
+};
+
+GLenum fboBuff[] = { GL_COLOR_ATTACHMENT0 };
+GLenum windowBuff[] = { GL_BACK_LEFT };
+
+FBOTexture colorTex;
+
+void render_thru_fbo()
+{
+	glClearDepth(1.0f);
+	
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glEnable(GL_DEPTH_TEST);
+
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_FRONT);
+
+	ptarg->Bind();
+	glDrawBuffers(1, fboBuff);
+
+	glViewport(0,0,colorTex.width, colorTex.height);
+
+	glClearColor(0,1,1,1);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(45, windowWidth/windowHeight,0.3,200);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	glPushMatrix();
+	glTranslatef(-1,0,-6);
+	glColor3f(1,0,0);
+	glRotatef(angle, 0,1,0);
+	test_texture->Activate();
+	glutSolidTeapot(1);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(1,0,-6);
+	glColor3f(1,1,0);
+	glRotatef(angle, 0,1,0);
+	glutSolidTeapot(1);
+	test_texture->Deactivate();
+	glPopMatrix();
+
+	ptarg->Unbind();
+
+	glDisable(GL_CULL_FACE);
+
+	glDrawBuffers(1, windowBuff);
+
+	glViewport(0,0,windowWidth,windowHeight);
+
+	glClearColor(1,0,0,1);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, colorTex.texID);
+
+	glMatrixMode (GL_MODELVIEW);
+	glPushMatrix ();
+	glLoadIdentity ();
+	glMatrixMode (GL_PROJECTION);
+	glPushMatrix ();
+	glLoadIdentity ();
+	glBegin (GL_QUADS);
+	glTexCoord2f(0,0); glVertex3i (-1, -1, -1);
+	glTexCoord2f(1,0); glVertex3i (1, -1, -1);
+	glTexCoord2f(1,1); glVertex3i (1, 1, -1);
+	glTexCoord2f(0,1); glVertex3i (-1, 1, -1);
+	glEnd ();
+	glPopMatrix ();
+	glMatrixMode (GL_MODELVIEW);
+	glPopMatrix ();
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glDisable(GL_TEXTURE_2D);
+
+	angle += 0.03f;
+	glutSwapBuffers();
+};
+
 void display()
 {
+	/*glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glDisable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
+
+	glLoadIdentity();
+
+	test_texture->Activate();
+	basicTexturingShader->Activate();
+
+	glPushMatrix();
+	glTranslatef(0,0,-6);
+	glRotatef(angle,0,1,0);
+	glColor3f(1,1,0);
+	glutSolidTeapot(1.0f);
+	glPopMatrix();
+
+	angle += 0.06f;
+	glutSwapBuffers();
+	return;*/
+
+	if(!fboactive)
+	{
+		standard_render_nofbo();
+		return;
+	}
+	render_thru_fbo();
+	return;
+
 	glLoadIdentity();
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
@@ -176,11 +339,17 @@ void idle()
 
 void reshape (i32 width, i32 height)
 {
-	glViewport(0,0,(GLsizei)width, (GLsizei)height);
+	windowWidth = width;
+	windowHeight = height;
+
+	glViewport(0,0,windowWidth, windowHeight);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(45, (width/height), 0.01, 100);
+	gluPerspective(45, windowWidth/windowHeight, 0.5, 100);
 	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	ptarg->SetWidthAndHeight(width, height);
 
 	TwWindowSize(width,height);
 }
@@ -258,8 +427,9 @@ int main(i32 argc, c8 **argv)
 	conf.ParseConfigFile("Data/config.xml");
 
 	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH | GLUT_ALPHA);
 	glutInitWindowSize(conf.GetResolution().x, conf.GetResolution().y);
+	windowWidth = conf.GetResolution().x; windowHeight = conf.GetResolution().y;
 	glutCreateWindow("Scratch");
 	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION); // from freeglut, allows continued execution on window close
 
@@ -276,12 +446,27 @@ int main(i32 argc, c8 **argv)
 	setup_anttweakbar();
 	TwGLUTModifiersFunc(glutGetModifiers);
 
-	glEnable(GL_DEPTH_TEST);
-
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
 	glClearColor(0,0,0,1);
 
+	glewInit();
+
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+
+	ptarg = new RenderTarget(windowWidth, windowHeight);
+	ptarg->CreateDepthTexture();
+	colorTex = ptarg->CreateColorTexture();
+	
+	test_texture = texMan.LoadTextureFromFile("Data/test.jpg");
+
+	if(shaderMan.LoadShader(basicTexturingShaderID, "Data/Shaders/BasicTexturing.vert", "Data/Shaders/BasicTexturing.frag"))
+	{
+		basicTexturingShader = shaderMan.GetShader(basicTexturingShaderID);
+		basicTexturingShader->SetUniform("baseMap", *test_texture);
+	}
+	
 	gt.Init();
 	gt.Update();
 

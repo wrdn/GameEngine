@@ -4,6 +4,7 @@
 //#include <pmmintrin.h> // SSE3 header
 
 typedef float f32; // float
+typedef double f64; // double
 //typedef __m128 float4; // SIMD type
 
 typedef char c8;

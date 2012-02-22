@@ -10,11 +10,11 @@ set(math_headers float2.h float3.h float4.h Quaternion.h Mat44.h Quaternion.h fl
 set(math_src float2.cpp float3.cpp float4.cpp Mat44.cpp Quaternion.cpp)
 
 # shading
-set(shading_headers ShaderObject.h ShaderSet.h Light.h color.h Camera.h)
-set(shading_src ShaderObject.cpp ShaderSet.cpp Camera.cpp)
+set(shading_headers Light.h color.h Camera.h RenderTarget.h TextureManager.h Texture.h ShaderManager.h Shader.h)
+set(shading_src Camera.cpp RenderTarget.cpp TextureManager.cpp Texture.cpp ShaderManager.cpp Shader.cpp)
 
 # utilities
-set(util_headers ctypes.h strutils.h util.h AppConfig.h EngineConfig.h Namable.h GameTime.h PerfTimer.h)
+set(util_headers ctypes.h strutils.h util.h AppConfig.h EngineConfig.h Namable.h GameTime.h PerfTimer.h stb_image.h)
 set(util_src strutils.cpp util.cpp AppConfig.cpp EngineConfig.cpp PerfTimer.cpp)
 
 # other non categorised files

@@ -1,0 +1,47 @@
+macro(copy_file src dst_dir)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${src} ${dst_dir}/Data/${src} COPYONLY)
+endmacro(copy_file)
+
+###### File: "Shaders/BasicTexturing.frag"
+copy_file("Shaders/BasicTexturing.frag" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/Debug")
+copy_file("Shaders/BasicTexturing.frag" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/Release")
+
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+copy_file("Shaders/BasicTexturing.frag" "${PROJECT_BINARY_DIR}/src/")
+copy_file("Shaders/BasicTexturing.frag" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/MinSizeRel/")
+copy_file("Shaders/BasicTexturing.frag" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/RelWithDebInfo/")
+ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+######
+
+###### File: "Shaders/BasicTexturing.vert"
+copy_file("Shaders/BasicTexturing.vert" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/Debug")
+copy_file("Shaders/BasicTexturing.vert" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/Release")
+
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+copy_file("Shaders/BasicTexturing.vert" "${PROJECT_BINARY_DIR}/src/")
+copy_file("Shaders/BasicTexturing.vert" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/MinSizeRel/")
+copy_file("Shaders/BasicTexturing.vert" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/RelWithDebInfo/")
+ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+######
+
+###### File: "config.xml"
+copy_file("config.xml" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/Debug")
+copy_file("config.xml" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/Release")
+
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+copy_file("config.xml" "${PROJECT_BINARY_DIR}/src/")
+copy_file("config.xml" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/MinSizeRel/")
+copy_file("config.xml" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/RelWithDebInfo/")
+ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+######
+
+###### File: "test.jpg"
+copy_file("test.jpg" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/Debug")
+copy_file("test.jpg" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/Release")
+
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+copy_file("test.jpg" "${PROJECT_BINARY_DIR}/src/")
+copy_file("test.jpg" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/MinSizeRel/")
+copy_file("test.jpg" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/RelWithDebInfo/")
+ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+######
