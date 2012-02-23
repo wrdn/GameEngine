@@ -14,7 +14,7 @@ set(shading_headers Light.h color.h Camera.h RenderTarget.h TextureManager.h Tex
 set(shading_src Camera.cpp RenderTarget.cpp TextureManager.cpp Texture.cpp ShaderManager.cpp Shader.cpp)
 
 # utilities
-set(util_headers ctypes.h strutils.h util.h AppConfig.h EngineConfig.h Namable.h GameTime.h PerfTimer.h stb_image.h)
+set(util_headers ctypes.h strutils.h util.h AppConfig.h EngineConfig.h Namable.h GameTime.h PerfTimer.h stb_image.h testobjects.h AntTweakBarFunctions.h)
 set(util_src strutils.cpp util.cpp AppConfig.cpp EngineConfig.cpp PerfTimer.cpp)
 
 # other non categorised files

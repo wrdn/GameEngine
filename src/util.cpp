@@ -25,17 +25,25 @@ void toggle_bit(u32 &opt, const u32 bit)
 	opt ^= bit;
 };
 
-void clamp(u32 &v, u32 lower, u32 upper)
+void clamp_self(u32 &v, u32 lower, u32 upper)
 {
 	if(v < lower) { v = lower; }
 	else if(v > upper) { v = upper; }
 };
 
-void clamp(i32 &v, i32 lower, i32 upper)
+void clamp_self(i32 &v, i32 lower, i32 upper)
 {
 	if(v < lower) { v = lower; }
 	else if(v > upper) { v = upper; }
 };
+void clamp_self(f32 &v, f32 lower, f32 upper)
+{
+	if(v < lower) { v = lower; }
+	else if(v > upper) { v = upper; }
+};
+u32 clamp(u32 v, u32 lower, u32 upper) { clamp_self(v,lower,upper); return v; };
+i32 clamp(i32 v, i32 lower, u32 upper) { clamp_self(v,lower,upper); return v; };
+f32 clamp(f32 v, f32 lower, f32 upper) { clamp_self(v,lower,upper); return v; };
 
 bool NearZero(const f32 v)
 {

@@ -23,8 +23,13 @@ i32 bit_set(const u32 &opt, const u32 bit);
 void clear_bit(u32 &opt, const u32 bit);
 void toggle_bit(u32 &opt, const u32 bit);
 
-void clamp(u32 &v, u32 lower, u32 upper);
-void clamp(i32 &v, i32 lower, i32 upper);
+void clamp_self(u32 &v, u32 lower, u32 upper);
+void clamp_self(i32 &v, i32 lower, i32 upper);
+void clamp_self(f32 &v, f32 lower, f32 upper);
+
+u32 clamp(u32 v, u32 lower, u32 upper);
+i32 clamp(i32 v, i32 lower, u32 upper);
+f32 clamp(f32 v, f32 lower, f32 upper);
 
 bool NearZero(const f32 v);
 bool NearOne(const f32 v);
