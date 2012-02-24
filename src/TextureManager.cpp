@@ -56,6 +56,8 @@ Texture* TextureManager::LoadTextureFromFile(const c8* const _filename)
 		stb_free(pixdata);
 
 		Texture tex(id);
+		tex.SetWidth(x);
+		tex.SetHeight(y);
 		textures[filename_hash] = tex;
 		return &textures[filename_hash];
 	}

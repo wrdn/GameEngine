@@ -3,8 +3,28 @@
 #include <GL/freeglut.h>
 #include "ctypes.h"
 
+void startTranslate(float x,float y,float z)
+{
+	glPushMatrix();
+	glTranslatef(x,y,z);
+	
+	glMatrixMode(GL_TEXTURE);
+	glActiveTextureARB(GL_TEXTURE7);
+	glPushMatrix();
+	glTranslatef(x,y,z);
+}
+
+void endTranslate()
+{
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
+}
+
 void draw_cube()
 {
+	startTranslate(0,2,0);
+
 	glBegin(GL_QUADS);
 
 	// Front Face
@@ -45,6 +65,8 @@ void draw_cube()
 	glTexCoord2d(0.0, 1.0);		glVertex3d(-1.0,  1.0, -1.0);
 
 	glEnd();
+
+	endTranslate();
 };
 
 void draw_fullscreen_quad()
@@ -80,6 +102,7 @@ void draw_fullscreen_quad()
 
 void draw_floor_plane()
 {
+
 	glBegin(GL_QUADS);
 	glNormal3f(0.0f, 1.0f, 0.0f);
 

@@ -39,7 +39,7 @@ public:
 			sh->PrintShaderLog(GL_FRAGMENT_SHADER, std::cout);
 			sh->PrintProgramLog(std::cout);
 			
-			delete sh;
+			RemoveShader(id);
 
 			return false;
 		}

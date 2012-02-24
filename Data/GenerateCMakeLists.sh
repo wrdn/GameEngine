@@ -10,7 +10,7 @@ if [[ ! -d "$f" && "$f" != "$0" && "$f" != *CMakeLists* && "$f" != *~ ]]
 then
 
 # copy to Debug and Release
-echo -e "\n###### File: \"$f\"\ncopy_file(\"$f\" \"\${PROJECT_BINARY_DIR}/\${PROJECT_NAME}/Debug\")
+echo -e "\n###### File: \"$f\" ######\ncopy_file(\"$f\" \"\${PROJECT_BINARY_DIR}/\${PROJECT_NAME}/Debug\")
 copy_file(\"$f\" \"\${PROJECT_BINARY_DIR}/\${PROJECT_NAME}/Release\")\n" >> CMakeLists.txt
 
 # copy to src/ and all the directories VS can create builds for: Debug, Release (above), plus MinSizeRel and RelWithDebInfo
