@@ -23,7 +23,7 @@ void endTranslate()
 
 void draw_cube()
 {
-	startTranslate(0,2,0);
+	startTranslate(0,1,0);
 
 	glBegin(GL_QUADS);
 

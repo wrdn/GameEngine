@@ -25,8 +25,17 @@ float chebyshevUpperBound( float distance)
 void main()
 {	
 	ShadowCoordPostW = shadowCoord / shadowCoord.w;
+	float dist = texture2D(shadowMap,ShadowCoordPostW.xy).x;
 	
-	float shadow = chebyshevUpperBound(ShadowCoordPostW.z);
+	float shadow = 1.0;
+	if(shadowCoord.w > 0.0)
+	{
+		shadow = dist < ShadowCoordPostW.z ? 0.5 : 1.0;
+	}
 	
-	gl_FragColor = vec4(shadow) * gl_Color;
+	gl_FragColor = shadow * gl_Color;
+	
+	//float shadow = chebyshevUpperBound(ShadowCoordPostW.z);
+	//gl_FragColor = vec4(shadow) * gl_Color;
+	//gl_FragColor = vec4(1,1,0,1);
 }

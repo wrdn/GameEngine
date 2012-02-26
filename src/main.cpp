@@ -29,12 +29,47 @@ ShaderManager shaderMan;
 u32 vsmShaderID, vsmDepthWriteShaderID;
 Shader *vsmDepthWriterShader, *vsmShader;
 
+
+u32 shadowMappingShaderID; Shader *shadowMappingShader;
+
+
 GLenum fboBuff[] = { GL_COLOR_ATTACHMENT0 };
 GLenum windowBuff[] = { GL_BACK };
 FBOTexture colorTex, depthTex;
 
-const float NEAR_PLANE = 1;
-const float FAR_PLANE = 50;
+const float NEAR_PLANE = 3;
+const float FAR_PLANE = 200;
+
+void DrawFullScreenQuad(u32 texID)
+{
+	glDisable(GL_CULL_FACE);
+	glActiveTextureARB(GL_TEXTURE0);
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(45, (double)windowWidth/(double)windowHeight, NEAR_PLANE, FAR_PLANE);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	// set viewport, clear colors etc
+	glDrawBuffers(1, windowBuff);
+	glViewport(0,0,windowWidth,windowHeight);
+
+	glClearColor(0,0,0,1);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glDisable(GL_DEPTH_TEST);
+
+	// draw fullscreen quad with renderbuffer (test)
+	glEnable(GL_TEXTURE_2D);
+	glActiveTextureARB(GL_TEXTURE0);
+	glLoadIdentity();
+	glBindTexture(GL_TEXTURE_2D, texID);
+	draw_fullscreen_quad();
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+};
 
 void setup_matrices(f32 posx, f32 posy, f32 posz, f32 lookx, f32 looky, f32 lookz)
 {
@@ -77,10 +112,11 @@ void setTextureMatrix(void)
 
 //setup_matrices(7,12,25, -0.5, -0.5, -1); // camera
 //setup_matrices(-7,12,25, 0.5, -0.5, -1); // light
-void shadow_render()
+void shadow_render2()
 {
 	glEnable(GL_TEXTURE_2D);glActiveTexture(GL_TEXTURE0);
 	glEnable(GL_DEPTH_TEST);
+	float3 ntarg;
 
 	ptarg->Bind();
 	glViewport(0,0,ptarg->GetWidth(), ptarg->GetHeight());
@@ -88,7 +124,15 @@ void shadow_render()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity();
 
-	setup_matrices(0,5,-5,0,0,1);
+	//setup_matrices(0,20,-10,0,0,1);
+	glLoadIdentity();
+	glMatrixMode(GL_PROJECTION); glLoadIdentity();
+	gluPerspective(45, (double)windowWidth/(double)windowHeight,NEAR_PLANE, FAR_PLANE);
+	glMatrixMode(GL_MODELVIEW); glLoadIdentity();
+	ntarg = c.position + c.target.normalize(); ntarg.normalize();
+	gluLookAt(c.position.x(), c.position.y(), c.position.z(),
+		ntarg.x(), ntarg.y(), ntarg.z(),
+		c.up.x(), c.up.y(), c.up.z());
 
 	vsmDepthWriterShader->Activate();
 
@@ -106,6 +150,9 @@ void shadow_render()
 
 	ptarg->Unbind();
 
+	//draw_fullscreen_quad(colorTex.texID);
+	//return;
+
 
 	glDrawBuffers(1, windowBuff);
 	glViewport(0,0,windowWidth,windowHeight);
@@ -117,7 +164,7 @@ void shadow_render()
 	glMatrixMode(GL_PROJECTION); glLoadIdentity();
 	gluPerspective(45, (double)windowWidth/(double)windowHeight,NEAR_PLANE, FAR_PLANE);
 	glMatrixMode(GL_MODELVIEW); glLoadIdentity();
-	float3 ntarg = c.position + c.target.normalize(); ntarg.normalize();
+	ntarg = c.position + c.target.normalize(); ntarg.normalize();
 	gluLookAt(c.position.x(), c.position.y(), c.position.z(),
 		ntarg.x(), ntarg.y(), ntarg.z(),
 		c.up.x(), c.up.y(), c.up.z());
@@ -130,12 +177,12 @@ void shadow_render()
 	glActiveTexture(GL_TEXTURE7);
 	glBindTexture(GL_TEXTURE_2D, colorTex.texID);
 
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
-
 	glColor3f(1,0,0);
 	draw_floor_plane();
 	glColor3f(1,1,1);
+	
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
 	draw_cube();
 	glColor3f(1,1,1);
 
@@ -144,8 +191,68 @@ void shadow_render()
 
 	vsmShader->Deactivate();
 
-	glutSwapBuffers();
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, 0);
 };
+
+f32 radius = 20;
+f32 anglet=0;
+void shadow_render()
+{
+	ptarg->Bind(); // BIND FBO
+	glUseProgram(0); // DEACTIVATE ANY SHADERS
+
+	glEnable(GL_DEPTH_TEST); glEnable(GL_CULL_FACE);
+
+	glViewport(0,0, ptarg->GetWidth(), ptarg->GetHeight()); // RENDER TO SIZE OF FBO
+	glClear(GL_DEPTH_BUFFER_BIT); // CLEAR DEPTH
+	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+
+	f32 lightX = radius * cos(anglet);
+	f32 lightZ = radius * sin(anglet);
+	setup_matrices(lightX,6,lightZ,0,0,0); // VIEW FROM LIGHT
+	//setup_matrices(-2,12,-10,0,0,0); // VIEW FROM LIGHT
+	anglet += 0.5f * (f32)gt.GetDeltaTime();
+
+	glEnable(GL_CULL_FACE); glCullFace(GL_FRONT); // DRAW OBJECTS WITH CULL FRONT ENABLED
+	draw_floor_plane();
+	draw_cube();
+
+	setTextureMatrix(); // PUTS MODELVIEWPROJECTION MATRIX INTO GLTEXTURE7 + BIAS
+
+	RenderTarget::Unbind(); // UNBIND FBO
+
+	glViewport(0,0,windowWidth,windowHeight); // RENDERING TO WINDOW
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE); // RENABLE COLORING
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	
+	//glDisable(GL_DEPTH_TEST);
+	//DrawFullScreenQuad(depthTex.texID);
+	//return;
+
+	shadowMappingShader->SetUniform("ShadowMap", 7); // ENABLE SHADOW MAPPING SHADER
+	glActiveTextureARB(GL_TEXTURE7);
+	glBindTexture(GL_TEXTURE_2D,depthTex.texID);
+	shadowMappingShader->Activate();
+
+	// SETUP CAMERA
+	glLoadIdentity();
+	glMatrixMode(GL_PROJECTION); glLoadIdentity();
+	gluPerspective(45, (double)windowWidth/(double)windowHeight,NEAR_PLANE, FAR_PLANE);
+	glMatrixMode(GL_MODELVIEW); glLoadIdentity();
+	float3 ntarg = c.position + c.target.normalize(); ntarg.normalize();
+	gluLookAt(c.position.x(), c.position.y(), c.position.z(),
+		ntarg.x(), ntarg.y(), ntarg.z(),
+		c.up.x(), c.up.y(), c.up.z());
+
+	glCullFace(GL_BACK); // DRAW OBJECTS WITH SHADOWS
+	glColor3f(1,0,0);
+	draw_floor_plane();
+	glColor3f(0,1,0);
+	draw_cube();
+
+	shadowMappingShader->Deactivate(); // DISABLE SHADOW MAPPING SHADER
+}
 
 void standard_render_nofbo()
 {
@@ -239,9 +346,8 @@ void render_thru_fbo()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// draw fullscreen quad with renderbuffer (test)
-	glEnable(GL_TEXTURE_2D); glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, colorTex.texID);
-	draw_fullscreen_quad();
-	glBindTexture(GL_TEXTURE_2D, 0);
+	//draw_fullscreen_quad(colorTex.texID);
+	DrawFullScreenQuad(colorTex.texID);
 
 	//TwRefreshBar(mainBar);
 	//TwDraw();
@@ -256,6 +362,8 @@ void display()
 	
 	shadow_render();
 
+	glutSwapBuffers();
+
 	//if(fboactive) render_thru_fbo();
 	//else standard_render_nofbo();
 }
@@ -268,12 +376,12 @@ void keyb(uc8 vkey, i32 x, i32 y)
 
 	case 'f': fboactive = !fboactive; break;
 
-	case 'w': c.position += c.target * (f32)gt.GetDeltaTime(); break;
-	case 's': c.position -= c.target * (f32)gt.GetDeltaTime(); break;
-	case 'a': c.position -= c.target.cross(c.up) * (f32)gt.GetDeltaTime(); break;
-	case 'd': c.position += c.target.cross(c.up) * (f32)gt.GetDeltaTime(); break;
-	case 'q': c.position += c.up * (f32)gt.GetDeltaTime(); break;
-	case 'e': c.position -= c.up * (f32)gt.GetDeltaTime(); break;
+	case 'w': c.position += c.target * c.speed * (f32)gt.GetDeltaTime(); break;
+	case 's': c.position -= c.target * c.speed * (f32)gt.GetDeltaTime(); break;
+	case 'a': c.position -= c.target.cross(c.up) * c.speed * (f32)gt.GetDeltaTime(); break;
+	case 'd': c.position += c.target.cross(c.up) * c.speed * (f32)gt.GetDeltaTime(); break;
+	case 'q': c.position += c.up * c.speed * (f32)gt.GetDeltaTime(); break;
+	case 'e': c.position -= c.up * c.speed * (f32)gt.GetDeltaTime(); break;
 	
 	case 'r':
 		{
@@ -301,7 +409,7 @@ void reshape (i32 width, i32 height)
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	ptarg->SetWidthAndHeight(width, height);
+	//ptarg->SetWidthAndHeight(width, height);
 
 	TwWindowSize(width,height);
 }
@@ -373,7 +481,8 @@ void Load(EngineConfig &conf)
 	originTeapotRotation = Quaternion(float3(0,1,0), DEGTORAD(0));
 	finalTeapotRotation = Quaternion(float3(0,1,0), DEGTORAD(190));
 
-	ptarg = new RenderTarget(1024, 1024);
+	ptarg = new RenderTarget(1024,1024);
+	ptarg->SetDrawReadBufferState(GL_NONE, GL_NONE);
 	depthTex = ptarg->CreateAndAttachTexture(
 		GL_DEPTH_COMPONENT,
 		GL_DEPTH_COMPONENT,
@@ -383,7 +492,7 @@ void Load(EngineConfig &conf)
 		GL_NEAREST, GL_NEAREST,
 		GL_CLAMP, GL_CLAMP);
 
-	colorTex = ptarg->CreateAndAttachTexture(
+	/*colorTex = ptarg->CreateAndAttachTexture(
 		GL_RGBA32F,
 		GL_RGBA,
 		GL_FLOAT,
@@ -392,23 +501,33 @@ void Load(EngineConfig &conf)
 		GL_LINEAR_MIPMAP_LINEAR,
 		GL_LINEAR_MIPMAP_LINEAR,
 		GL_CLAMP,
-		GL_CLAMP);
+		GL_CLAMP);*/
 
 	test_texture = texMan.LoadTextureFromFile("Data/test.jpg");
 
-	shaderMan.LoadShader(vsmDepthWriteShaderID, "Data/Shaders/WriteDepth.vert", "Data/Shaders/WriteDepth.frag");
+	/*shaderMan.LoadShader(vsmDepthWriteShaderID, "Data/Shaders/WriteDepth.vert", "Data/Shaders/WriteDepth.frag");
 	vsmDepthWriterShader = shaderMan.GetShader(vsmDepthWriteShaderID);
 	
 	shaderMan.LoadShader(vsmShaderID, "Data/Shaders/VSM.vert", "Data/Shaders/VSM.frag");
 	vsmShader = shaderMan.GetShader(vsmShaderID);
-	vsmShader->SetUniform("shadowMap", 7);
+	vsmShader->SetUniform("shadowMap", 7);*/
+
+
+
+
+	shaderMan.LoadShader(shadowMappingShaderID, "Data/Shaders/ShadowMapping.vert", "Data/Shaders/ShadowMapping.frag");
+	shadowMappingShader = shaderMan.GetShader(shadowMappingShaderID);
+	shadowMappingShader->SetUniform("ShadowMap", 7);
+
+
+
+
 
 	glutWarpPointer(windowWidth/2, windowHeight/2); // make sure to do this before initialising the camera below (otherwise, the camera will immediately be placed somewhere random)
 
-	Camera c;
 	c.speed = 10;
-	c.position.set(7.2f, 9.25f, -6.64f);
-	c.target.set(6.61f, 8.63f, -6.13f);
+	c.position.set(-3,5,-8);
+	c.target.set(0.25,-0.5,1);
 
 	gt.Update();
 };

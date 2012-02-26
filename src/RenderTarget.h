@@ -43,6 +43,14 @@ public:
 	unsigned int GetWidth() const { return width; }
 	unsigned int GetHeight() const { return height; }
 
+	void SetDrawReadBufferState(GLenum gl_draw_buffer, GLenum gl_read_buffer)
+	{
+		Bind();
+		glDrawBuffer(gl_draw_buffer);
+		glReadBuffer(gl_read_buffer);
+		Unbind();
+	}
+
 	void SetWidth(unsigned int w) { width = w; RecreateTextures(); }
 	void SetHeight(unsigned int h) { height = h; RecreateTextures(); }
 	void SetWidthAndHeight(unsigned int w, unsigned int h)
