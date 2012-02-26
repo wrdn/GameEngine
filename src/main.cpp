@@ -18,7 +18,18 @@ Camera c;
 TwBar *mainBar;
 bool mouseRotateCamera = true; // set to false to disable mouse tracking (allowing mouse to be placed anywhere in window)
 Quaternion originTeapotRotation, finalTeapotRotation;
-RenderTarget *ptarg;
+
+RenderTarget *basic_shadow_mapping_buffer; // http://fabiensanglard.net/shadowmapping/index.php
+RenderTarget *pcf_shadow_buffer; // http://fabiensanglard.net/shadowmappingPCF/index.php
+RenderTarget *activeBuffer;
+
+u32 shadowMappingShaderID; Shader *shadowMappingShader;
+u32 pcfShadowMappingShaderID; Shader *pcfShadowMappingShader;
+
+FBOTexture colorTex, depthTex; // for basic shadow mapping
+
+FBOTexture pcfDepthTex;
+
 int windowWidth, windowHeight;
 f32 angle=0, ltangle=0;
 bool fboactive=false;
@@ -29,16 +40,14 @@ ShaderManager shaderMan;
 u32 vsmShaderID, vsmDepthWriteShaderID;
 Shader *vsmDepthWriterShader, *vsmShader;
 
-
-u32 shadowMappingShaderID; Shader *shadowMappingShader;
-
-
 GLenum fboBuff[] = { GL_COLOR_ATTACHMENT0 };
 GLenum windowBuff[] = { GL_BACK };
-FBOTexture colorTex, depthTex;
 
 const float NEAR_PLANE = 3;
 const float FAR_PLANE = 200;
+
+f32 radius = 20;
+f32 anglet=0;
 
 void DrawFullScreenQuad(u32 texID)
 {
@@ -110,101 +119,67 @@ void setTextureMatrix(void)
 
 #pragma warning (disable : 4702)
 
-//setup_matrices(7,12,25, -0.5, -0.5, -1); // camera
-//setup_matrices(-7,12,25, 0.5, -0.5, -1); // light
-void shadow_render2()
+void pcf_shadow_mapping_render()
 {
-	glEnable(GL_TEXTURE_2D);glActiveTexture(GL_TEXTURE0);
-	glEnable(GL_DEPTH_TEST);
-	float3 ntarg;
+	pcf_shadow_buffer->Bind();
+	glUseProgram(0);
 
-	ptarg->Bind();
-	glViewport(0,0,ptarg->GetWidth(), ptarg->GetHeight());
-	glClearColor(0,0,0,1);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glLoadIdentity();
+	glEnable(GL_DEPTH_TEST); glEnable(GL_CULL_FACE);
+	glViewport(0,0, pcf_shadow_buffer->GetWidth(), pcf_shadow_buffer->GetHeight()); // RENDER TO SIZE OF FBO
+	glClear(GL_DEPTH_BUFFER_BIT); // CLEAR DEPTH
+	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); // only write to z buffer
 
-	//setup_matrices(0,20,-10,0,0,1);
-	glLoadIdentity();
-	glMatrixMode(GL_PROJECTION); glLoadIdentity();
-	gluPerspective(45, (double)windowWidth/(double)windowHeight,NEAR_PLANE, FAR_PLANE);
-	glMatrixMode(GL_MODELVIEW); glLoadIdentity();
-	ntarg = c.position + c.target.normalize(); ntarg.normalize();
-	gluLookAt(c.position.x(), c.position.y(), c.position.z(),
-		ntarg.x(), ntarg.y(), ntarg.z(),
-		c.up.x(), c.up.y(), c.up.z());
+	// view from light
+	f32 lightX = radius * cos(anglet), lightZ = radius * sin(anglet);
+	setup_matrices(lightX,6,lightZ,0,0,0);
+	anglet += 0.5f * (f32)gt.GetDeltaTime();
 
-	vsmDepthWriterShader->Activate();
-
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
-
-	draw_floor_plane();
-	draw_cube();
-
-	glGenerateMipmap(GL_TEXTURE_2D);
+	// render objects from light pov
+	glEnable(GL_CULL_FACE); glCullFace(GL_FRONT); // DRAW OBJECTS WITH CULL FRONT ENABLED
+	draw_floor_plane(); draw_cube();
 
 	setTextureMatrix();
-
-	vsmDepthWriterShader->Deactivate();
-
-	ptarg->Unbind();
-
-	//draw_fullscreen_quad(colorTex.texID);
-	//return;
-
-
-	glDrawBuffers(1, windowBuff);
-	glViewport(0,0,windowWidth,windowHeight);
-
-	glClearColor(0,0,0,1);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	RenderTarget::Unbind();
 	
+	glViewport(0,0,windowWidth,windowHeight); // RENDERING TO WINDOW
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE); // RENABLE COLORING
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// RENDER SCENE FROM CAMERA WITH SHADOWS
+	pcfShadowMappingShader->SetUniform("ShadowMap", 7);
+	f32 xoffset = 1.0f / pcf_shadow_buffer->GetWidth();
+	xoffset = 1.0f / windowWidth;
+	f32 yoffset = 1.0f / pcf_shadow_buffer->GetHeight();
+	yoffset = 1.0f / windowHeight;
+	pcfShadowMappingShader->SetUniform("xPixelOffset", xoffset);
+	pcfShadowMappingShader->SetUniform("yPixelOffset", yoffset);
+
+	glActiveTextureARB(GL_TEXTURE7);
+	glBindTexture(GL_TEXTURE_2D,pcfDepthTex.texID);
+	pcfShadowMappingShader->Activate();
 	glLoadIdentity();
 	glMatrixMode(GL_PROJECTION); glLoadIdentity();
 	gluPerspective(45, (double)windowWidth/(double)windowHeight,NEAR_PLANE, FAR_PLANE);
 	glMatrixMode(GL_MODELVIEW); glLoadIdentity();
-	ntarg = c.position + c.target.normalize(); ntarg.normalize();
+	float3 ntarg = c.position + c.target.normalize(); ntarg.normalize();
 	gluLookAt(c.position.x(), c.position.y(), c.position.z(),
 		ntarg.x(), ntarg.y(), ntarg.z(),
 		c.up.x(), c.up.y(), c.up.z());
-
-	
-	vsmShader->SetUniform("shadowMap", 7);
-	vsmShader->Activate(); 
-
-	glEnable(GL_TEXTURE_2D);
-	glActiveTexture(GL_TEXTURE7);
-	glBindTexture(GL_TEXTURE_2D, colorTex.texID);
-
-	glColor3f(1,0,0);
-	draw_floor_plane();
-	glColor3f(1,1,1);
-	
-	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
-	draw_cube();
-	glColor3f(1,1,1);
+	glColor3f(1,0,0); draw_floor_plane();
+	glColor3f(0,1,0); draw_cube();
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	vsmShader->Deactivate();
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	pcfShadowMappingShader->Deactivate();
 };
 
-f32 radius = 20;
-f32 anglet=0;
-void shadow_render()
+void basic_shadow_mapping_render()
 {
-	ptarg->Bind(); // BIND FBO
+	basic_shadow_mapping_buffer->Bind(); // BIND FBO
 	glUseProgram(0); // DEACTIVATE ANY SHADERS
 
 	glEnable(GL_DEPTH_TEST); glEnable(GL_CULL_FACE);
 
-	glViewport(0,0, ptarg->GetWidth(), ptarg->GetHeight()); // RENDER TO SIZE OF FBO
+	glViewport(0,0, basic_shadow_mapping_buffer->GetWidth(), basic_shadow_mapping_buffer->GetHeight()); // RENDER TO SIZE OF FBO
 	glClear(GL_DEPTH_BUFFER_BIT); // CLEAR DEPTH
 	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
@@ -254,119 +229,31 @@ void shadow_render()
 	shadowMappingShader->Deactivate(); // DISABLE SHADOW MAPPING SHADER
 }
 
-void standard_render_nofbo()
-{
-	glClearColor(0,0,0,0);
-	glEnable(GL_DEPTH_TEST);
-	glClearDepth(1.0f);
-
-	glDisable(GL_CULL_FACE);
-	//glEnable(GL_CULL_FACE);
-	//glCullFace(GL_FRONT); // < required for the glutSolidTeapot() as its faces are the wrong order
-
-	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-	glLoadIdentity();
-
-	float3 ntarg = c.position + c.target.normalize(); ntarg.normalize();
-	gluLookAt(c.position.x(), c.position.y(), c.position.z(),
-		ntarg.x(), ntarg.y(), ntarg.z(),
-		c.up.x(), c.up.y(), c.up.z());
-
-	glPushMatrix();
-
-	test_texture->Activate();
-	vsmDepthWriterShader->Activate();
-
-	glPushMatrix();
-	glScaled(0.1,0.1,0.1);
-	glTranslatef(0,0,-2.5);
-	draw_cube();
-	glPopMatrix();
-
-	glPushMatrix();
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glTranslated(0,-0.1,0);
-	glScaled(0.05,0.05,0.05);
-	glColor3f(0,1,0);
-	draw_floor_plane();
-	glPopMatrix();
-
-	vsmDepthWriterShader->Deactivate();
-	test_texture->Deactivate();
-
-	glPopMatrix();
-
-	//TwRefreshBar(mainBar);
-	//TwDraw();
-
-	angle += 0.03f;
-	glutSwapBuffers();
-};
-
-void render_thru_fbo()
-{
-	glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, 0);
-
-	// Bind FBO
-	ptarg->Bind();
-
-	// setup draw buffers/viewport etc
-	glDrawBuffers(1, fboBuff); // only required if rendering to >1 buffer
-	glViewport(0,0,colorTex.width, colorTex.height);
-	glClearColor(0,0,0,1);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	glMatrixMode(GL_PROJECTION); glLoadIdentity();
-	gluPerspective(45, (double)windowWidth/(double)windowHeight, NEAR_PLANE,FAR_PLANE);
-	glMatrixMode(GL_MODELVIEW); glLoadIdentity();
-
-	// setup camera
-	float3 ntarg = c.position + c.target.normalize(); ntarg.normalize();
-	gluLookAt(c.position.x(), c.position.y(), c.position.z(), ntarg.x(), ntarg.y(),
-		ntarg.z(), c.up.x(), c.up.y(), c.up.z());
-
-	// Draw stuff . . .
-	glPushMatrix();
-	glTranslatef(-1,0,-6);
-	glColor3f(1,0,0);
-	glRotatef(angle, 0,1,0);
-	test_texture->Activate();
-	glCullFace(GL_FRONT);
-	glutSolidTeapot(1);
-	glCullFace(GL_BACK);
-	test_texture->Deactivate();
-	glPopMatrix();
-
-	// Unbind FBO
-	ptarg->Unbind();
-
-	// set viewport, clear colors etc
-	glDrawBuffers(1, windowBuff);
-	glViewport(0,0,windowWidth,windowHeight);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	// draw fullscreen quad with renderbuffer (test)
-	//draw_fullscreen_quad(colorTex.texID);
-	DrawFullScreenQuad(colorTex.texID);
-
-	//TwRefreshBar(mainBar);
-	//TwDraw();
-
-	angle += 0.06f;
-	glutSwapBuffers();
-};
-
 void display()
 {
 	gt.Update();
 	
-	shadow_render();
+	//basic_shadow_mapping_render();
+	pcf_shadow_mapping_render();
 
 	glutSwapBuffers();
 
 	//if(fboactive) render_thru_fbo();
 	//else standard_render_nofbo();
 }
+
+int currentshadowmapsizeindex=0;
+const vec2i shadowMapSizes[] = 
+{
+	vec2i(128,128),
+	vec2i(256,256),
+	vec2i(512,512),
+	vec2i(1024,1024),
+	vec2i(2048,2048),
+	vec2i(4096,4096),
+	vec2i(8192,8192),
+};
+int numSizes = sizeof(shadowMapSizes) / sizeof(vec2i);
 
 void keyb(uc8 vkey, i32 x, i32 y)
 {
@@ -383,6 +270,19 @@ void keyb(uc8 vkey, i32 x, i32 y)
 	case 'q': c.position += c.up * c.speed * (f32)gt.GetDeltaTime(); break;
 	case 'e': c.position -= c.up * c.speed * (f32)gt.GetDeltaTime(); break;
 	
+	case 'n':
+		{
+			++currentshadowmapsizeindex;
+			if(currentshadowmapsizeindex == numSizes)
+			{
+				currentshadowmapsizeindex = 0;
+			}
+			
+			activeBuffer->SetWidthAndHeight(shadowMapSizes[currentshadowmapsizeindex].x, shadowMapSizes[currentshadowmapsizeindex].y);
+			cout << "Shadow map size: " << shadowMapSizes[currentshadowmapsizeindex].x << " " << shadowMapSizes[currentshadowmapsizeindex].y << endl;
+			break;
+		}
+
 	case 'r':
 		{
 			mouseRotateCamera = !mouseRotateCamera;
@@ -409,7 +309,7 @@ void reshape (i32 width, i32 height)
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	//ptarg->SetWidthAndHeight(width, height);
+	//basic_shadow_mapping_buffer->SetWidthAndHeight(width, height);
 
 	TwWindowSize(width,height);
 }
@@ -473,17 +373,33 @@ void setup_lights()
 	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 128.0f);
 };
 
-void Load(EngineConfig &conf)
+void LoadPCF(EngineConfig &conf)
 {
-	float3 dir(0,1,-1), wUp(0,1,0);
-	float3 lUp = wUp - wUp.dot(dir) * dir;
+	pcf_shadow_buffer = new RenderTarget(1024,1024);
+	pcf_shadow_buffer->SetDrawReadBufferState(GL_NONE, GL_NONE);
+	pcfDepthTex = pcf_shadow_buffer->CreateAndAttachTexture(
+		GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE,
+		GL_DEPTH_ATTACHMENT, false, GL_NEAREST, GL_NEAREST,
+		GL_CLAMP, GL_CLAMP);
 
-	originTeapotRotation = Quaternion(float3(0,1,0), DEGTORAD(0));
-	finalTeapotRotation = Quaternion(float3(0,1,0), DEGTORAD(190));
+	shaderMan.LoadShader(pcfShadowMappingShaderID, "Data/Shaders/PCF_ShadowMapping.vert",
+		"Data/Shaders/PCF_ShadowMapping.frag");
+	pcfShadowMappingShader = shaderMan.GetShader(pcfShadowMappingShaderID);
+	if(pcfShadowMappingShader)
+	{
+		pcfShadowMappingShader->SetUniform("ShadowMap", 7);
+		f32 xoffset = 1.0f / pcf_shadow_buffer->GetWidth();
+		f32 yoffset = 1.0f / pcf_shadow_buffer->GetHeight();
+		pcfShadowMappingShader->SetUniform("xPixelOffset", xoffset);
+		pcfShadowMappingShader->SetUniform("yPixelOffset", yoffset);
+	}
+};
 
-	ptarg = new RenderTarget(1024,1024);
-	ptarg->SetDrawReadBufferState(GL_NONE, GL_NONE);
-	depthTex = ptarg->CreateAndAttachTexture(
+void LoadBasicShadowMapping(EngineConfig &conf)
+{
+	basic_shadow_mapping_buffer = new RenderTarget(1024,1024);
+	basic_shadow_mapping_buffer->SetDrawReadBufferState(GL_NONE, GL_NONE);
+	depthTex = basic_shadow_mapping_buffer->CreateAndAttachTexture(
 		GL_DEPTH_COMPONENT,
 		GL_DEPTH_COMPONENT,
 		GL_UNSIGNED_BYTE,
@@ -492,16 +408,24 @@ void Load(EngineConfig &conf)
 		GL_NEAREST, GL_NEAREST,
 		GL_CLAMP, GL_CLAMP);
 
-	/*colorTex = ptarg->CreateAndAttachTexture(
-		GL_RGBA32F,
-		GL_RGBA,
-		GL_FLOAT,
-		GL_COLOR_ATTACHMENT0,
-		true,
-		GL_LINEAR_MIPMAP_LINEAR,
-		GL_LINEAR_MIPMAP_LINEAR,
-		GL_CLAMP,
-		GL_CLAMP);*/
+	shaderMan.LoadShader(shadowMappingShaderID, "Data/Shaders/ShadowMapping.vert", "Data/Shaders/ShadowMapping.frag");
+	shadowMappingShader = shaderMan.GetShader(shadowMappingShaderID);
+	shadowMappingShader->SetUniform("ShadowMap", 7);
+};
+
+void LoadCamera()
+{
+	glutWarpPointer(windowWidth/2, windowHeight/2); // make sure to do this before initialising the camera below (otherwise, the camera will immediately be placed somewhere random)
+
+	c.speed = 10;
+	c.position.set(-3,5,-8);
+	c.target.set(0.25,-0.5,1);
+};
+
+void Load(EngineConfig &conf)
+{
+	originTeapotRotation = Quaternion(float3(0,1,0), DEGTORAD(0));
+	finalTeapotRotation = Quaternion(float3(0,1,0), DEGTORAD(190));
 
 	test_texture = texMan.LoadTextureFromFile("Data/test.jpg");
 
@@ -512,23 +436,13 @@ void Load(EngineConfig &conf)
 	vsmShader = shaderMan.GetShader(vsmShaderID);
 	vsmShader->SetUniform("shadowMap", 7);*/
 
+	//LoadBasicShadowMapping(conf);
+	LoadPCF(conf);
 
+	activeBuffer = pcf_shadow_buffer;
+	//activeBuffer = basic_shadow_mapping_buffer;
 
-
-	shaderMan.LoadShader(shadowMappingShaderID, "Data/Shaders/ShadowMapping.vert", "Data/Shaders/ShadowMapping.frag");
-	shadowMappingShader = shaderMan.GetShader(shadowMappingShaderID);
-	shadowMappingShader->SetUniform("ShadowMap", 7);
-
-
-
-
-
-	glutWarpPointer(windowWidth/2, windowHeight/2); // make sure to do this before initialising the camera below (otherwise, the camera will immediately be placed somewhere random)
-
-	c.speed = 10;
-	c.position.set(-3,5,-8);
-	c.target.set(0.25,-0.5,1);
-
+	LoadCamera();
 	gt.Update();
 };
 
