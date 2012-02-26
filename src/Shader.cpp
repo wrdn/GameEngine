@@ -180,66 +180,91 @@ const GLint Shader::GetUnformLocation(const GLchar* name)
 
 void Shader::SetUniform(const GLint _id, const GLint val)
 {
+	i32 cp=0;
+	glGetIntegerv(GL_CURRENT_PROGRAM, &cp); // get current shader (activated again after setting uniform)
+
 	Activate();
 	glUniform1i(_id, val);
-	Deactivate();
+	
+	glUseProgram(cp);
 };
 
 
 void Shader::SetUniform(const c8 * const name, const Texture &tex)
 {
-	Activate();
-	GLint _id = GetUnformLocation(name);
-	SetUniform(_id, tex.GetTextureSlotIndex());
-	Deactivate();
+	SetUniform(GetUnformLocation(name), tex.GetTextureSlotIndex());
 };
 
 void Shader::SetUniform(const c8 * const name, const f32 val)
 {
+	i32 cp=0;
+	glGetIntegerv(GL_CURRENT_PROGRAM, &cp); // get current shader (activated again after setting uniform)
+
 	Activate();
 	GLint _id = GetUnformLocation(name);
 	glUniform1f(_id, val);
-	Deactivate();
+	
+	glUseProgram(cp);
 };
 
 void Shader::SetUniform(const c8 * const name, const GLint val)
 {
+	i32 cp=0;
+	glGetIntegerv(GL_CURRENT_PROGRAM, &cp); // get current shader (activated again after setting uniform)
+
 	Activate();
 	GLint _id = GetUnformLocation(name);
 	glUniform1i(_id, val);
-	Deactivate();
+	
+	glUseProgram(cp);
 };
 
 void Shader::SetUniform(const c8 * const name, const float2 &val)
 {
+	i32 cp=0;
+	glGetIntegerv(GL_CURRENT_PROGRAM, &cp); // get current shader (activated again after setting uniform)
+
 	Activate();
 	GLint _id = GetUnformLocation(name);
 	glUniform2fv(_id, 1, val.GetVec());
-	Deactivate();
+	
+	glUseProgram(cp);
 };
 
 void Shader::SetUniform(const c8 * const name, const float3 &val)
 {
+	i32 cp=0;
+	glGetIntegerv(GL_CURRENT_PROGRAM, &cp); // get current shader (activated again after setting uniform)
+
 	Activate();
 	GLint _id = GetUnformLocation(name);
 	glUniform3fv(_id, 1, val.GetVec());
-	Deactivate();
+	
+	glUseProgram(cp);
 };
 
 void Shader::SetUniform(const c8 * const name, const float4 &val)
 {
+	i32 cp=0;
+	glGetIntegerv(GL_CURRENT_PROGRAM, &cp); // get current shader (activated again after setting uniform)
+
 	Activate();
 	GLint _id = GetUnformLocation(name);
 	glUniform4fv(_id, 1, val.GetVec());
-	Deactivate();
+	
+	glUseProgram(cp);
 };
 
 void Shader::SetUniform(const c8 * const name, const Mat44 &val)
 {
+	i32 cp=0;
+	glGetIntegerv(GL_CURRENT_PROGRAM, &cp); // get current shader (activated again after setting uniform)
+
 	Activate();
 	GLint _id = GetUnformLocation(name);
 	glUniformMatrix4fv(_id, 1, GL_FALSE, val.GetMatrix());
-	Deactivate();
+
+	glUseProgram(cp);
 };
 
 void Shader::Activate()

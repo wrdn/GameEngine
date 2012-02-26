@@ -46,47 +46,47 @@ copy_file("Shaders/ShadowMapping.vert" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/Re
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 ######
 
-###### File: "Shaders/VSM.frag" ######
-copy_file("Shaders/VSM.frag" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/Debug")
-copy_file("Shaders/VSM.frag" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/Release")
+###### File: "Shaders/VSM/VSM.frag" ######
+copy_file("Shaders/VSM/VSM.frag" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/Debug")
+copy_file("Shaders/VSM/VSM.frag" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/Release")
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-copy_file("Shaders/VSM.frag" "${PROJECT_BINARY_DIR}/src/")
-copy_file("Shaders/VSM.frag" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/MinSizeRel/")
-copy_file("Shaders/VSM.frag" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/RelWithDebInfo/")
+copy_file("Shaders/VSM/VSM.frag" "${PROJECT_BINARY_DIR}/src/")
+copy_file("Shaders/VSM/VSM.frag" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/MinSizeRel/")
+copy_file("Shaders/VSM/VSM.frag" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/RelWithDebInfo/")
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 ######
 
-###### File: "Shaders/VSM.vert" ######
-copy_file("Shaders/VSM.vert" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/Debug")
-copy_file("Shaders/VSM.vert" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/Release")
+###### File: "Shaders/VSM/VSM.vert" ######
+copy_file("Shaders/VSM/VSM.vert" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/Debug")
+copy_file("Shaders/VSM/VSM.vert" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/Release")
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-copy_file("Shaders/VSM.vert" "${PROJECT_BINARY_DIR}/src/")
-copy_file("Shaders/VSM.vert" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/MinSizeRel/")
-copy_file("Shaders/VSM.vert" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/RelWithDebInfo/")
+copy_file("Shaders/VSM/VSM.vert" "${PROJECT_BINARY_DIR}/src/")
+copy_file("Shaders/VSM/VSM.vert" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/MinSizeRel/")
+copy_file("Shaders/VSM/VSM.vert" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/RelWithDebInfo/")
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 ######
 
-###### File: "Shaders/WriteDepth.frag" ######
-copy_file("Shaders/WriteDepth.frag" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/Debug")
-copy_file("Shaders/WriteDepth.frag" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/Release")
+###### File: "Shaders/VSM/VSM_StoreMoments.frag" ######
+copy_file("Shaders/VSM/VSM_StoreMoments.frag" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/Debug")
+copy_file("Shaders/VSM/VSM_StoreMoments.frag" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/Release")
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-copy_file("Shaders/WriteDepth.frag" "${PROJECT_BINARY_DIR}/src/")
-copy_file("Shaders/WriteDepth.frag" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/MinSizeRel/")
-copy_file("Shaders/WriteDepth.frag" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/RelWithDebInfo/")
+copy_file("Shaders/VSM/VSM_StoreMoments.frag" "${PROJECT_BINARY_DIR}/src/")
+copy_file("Shaders/VSM/VSM_StoreMoments.frag" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/MinSizeRel/")
+copy_file("Shaders/VSM/VSM_StoreMoments.frag" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/RelWithDebInfo/")
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 ######
 
-###### File: "Shaders/WriteDepth.vert" ######
-copy_file("Shaders/WriteDepth.vert" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/Debug")
-copy_file("Shaders/WriteDepth.vert" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/Release")
+###### File: "Shaders/VSM/VSM_StoreMoments.vert" ######
+copy_file("Shaders/VSM/VSM_StoreMoments.vert" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/Debug")
+copy_file("Shaders/VSM/VSM_StoreMoments.vert" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/Release")
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-copy_file("Shaders/WriteDepth.vert" "${PROJECT_BINARY_DIR}/src/")
-copy_file("Shaders/WriteDepth.vert" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/MinSizeRel/")
-copy_file("Shaders/WriteDepth.vert" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/RelWithDebInfo/")
+copy_file("Shaders/VSM/VSM_StoreMoments.vert" "${PROJECT_BINARY_DIR}/src/")
+copy_file("Shaders/VSM/VSM_StoreMoments.vert" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/MinSizeRel/")
+copy_file("Shaders/VSM/VSM_StoreMoments.vert" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}/RelWithDebInfo/")
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 ######
 

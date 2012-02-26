@@ -35,6 +35,7 @@ public:
 
 		if(!sh->LoadShader(fragmentShaderFilename, vertexShaderFilename))
 		{
+			std::cout << vertexShaderFilename << ", " << fragmentShaderFilename << std::endl;
 			sh->PrintShaderLog(GL_VERTEX_SHADER, std::cout);
 			sh->PrintShaderLog(GL_FRAGMENT_SHADER, std::cout);
 			sh->PrintProgramLog(std::cout);

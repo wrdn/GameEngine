@@ -21,14 +21,21 @@ Quaternion originTeapotRotation, finalTeapotRotation;
 
 RenderTarget *basic_shadow_mapping_buffer; // http://fabiensanglard.net/shadowmapping/index.php
 RenderTarget *pcf_shadow_buffer; // http://fabiensanglard.net/shadowmappingPCF/index.php
+RenderTarget *vsm_shadow_buffer, *vsm_blur_buffer; // http://fabiensanglard.net/shadowmappingVSM/index.php
 RenderTarget *activeBuffer;
 
+// BASIC SHADOW MAPPING
 u32 shadowMappingShaderID; Shader *shadowMappingShader;
+FBOTexture colorTex, depthTex;
+
+// PCF SHADOW MAPPING
 u32 pcfShadowMappingShaderID; Shader *pcfShadowMappingShader;
-
-FBOTexture colorTex, depthTex; // for basic shadow mapping
-
 FBOTexture pcfDepthTex;
+
+// VSM SHADOW MAPPING
+u32 vsmShadowMappingShaderID, vsmStoreMomentsShaderID, vsmBlurShaderID;
+Shader *vsmShadowMappingShader, *vsmStoreMomentsShader, *vsmBlurShader;
+FBOTexture vsmDepthTex, vsmColorTex, vsmBlurColorTex;
 
 int windowWidth, windowHeight;
 f32 angle=0, ltangle=0;
@@ -36,9 +43,6 @@ bool fboactive=false;
 Texture *test_texture;
 TextureManager texMan;
 ShaderManager shaderMan;
-
-u32 vsmShaderID, vsmDepthWriteShaderID;
-Shader *vsmDepthWriterShader, *vsmShader;
 
 GLenum fboBuff[] = { GL_COLOR_ATTACHMENT0 };
 GLenum windowBuff[] = { GL_BACK };
@@ -119,6 +123,65 @@ void setTextureMatrix(void)
 
 #pragma warning (disable : 4702)
 
+void vsm_shadow_mapping_render()
+{
+	glUseProgram(0);
+	vsm_shadow_buffer->Bind();
+
+	glEnable(GL_DEPTH_TEST); glEnable(GL_CULL_FACE);
+	glViewport(0,0, vsm_shadow_buffer->GetWidth(), vsm_shadow_buffer->GetHeight());
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// set up light view
+	f32 lightX = radius * cos(anglet), lightZ = radius * sin(anglet);
+	setup_matrices(lightX,6,lightZ,0,0,0);
+	anglet += 0.5f * (f32)gt.GetDeltaTime();
+
+	// render from light pov
+	vsmStoreMomentsShader->Activate();
+	glDisable(GL_CULL_FACE); draw_floor_plane(); 
+	//glEnable(GL_CULL_FACE); glCullFace(GL_FRONT);
+	draw_cube();
+	vsmStoreMomentsShader->Deactivate();
+
+	glGenerateMipmap(GL_TEXTURE_2D);
+	setTextureMatrix();
+
+	// **** BLUR SHADOW MAP HERE ... ***
+
+	RenderTarget::Unbind(); // we have now rendered depth and depth^2 into VSM FBO and blurred the result
+
+	glViewport(0,0,windowWidth,windowHeight); // RENDERING TO WINDOW
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	//DrawFullScreenQuad(vsmColorTex.texID);
+	//return;
+
+	vsmShadowMappingShader->SetUniform("shadowMap", 7);
+
+	vsmShadowMappingShader->Activate();
+
+	glActiveTextureARB(GL_TEXTURE7);
+	glBindTexture(GL_TEXTURE_2D,vsmColorTex.texID);
+
+	glLoadIdentity();
+	glMatrixMode(GL_PROJECTION); glLoadIdentity();
+	gluPerspective(45, (double)windowWidth/(double)windowHeight,NEAR_PLANE, FAR_PLANE);
+	glMatrixMode(GL_MODELVIEW); glLoadIdentity();
+	float3 ntarg = c.position + c.target.normalize(); ntarg.normalize();
+	gluLookAt(c.position.x(), c.position.y(), c.position.z(),
+		ntarg.x(), ntarg.y(), ntarg.z(),
+		c.up.x(), c.up.y(), c.up.z());
+	
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	glColor3f(1,0,0); draw_floor_plane();
+	glColor3f(0,1,0); draw_cube();
+
+	vsmShadowMappingShader->Deactivate();
+
+};
+
 void pcf_shadow_mapping_render()
 {
 	pcf_shadow_buffer->Bind();
@@ -156,7 +219,9 @@ void pcf_shadow_mapping_render()
 
 	glActiveTextureARB(GL_TEXTURE7);
 	glBindTexture(GL_TEXTURE_2D,pcfDepthTex.texID);
+
 	pcfShadowMappingShader->Activate();
+	
 	glLoadIdentity();
 	glMatrixMode(GL_PROJECTION); glLoadIdentity();
 	gluPerspective(45, (double)windowWidth/(double)windowHeight,NEAR_PLANE, FAR_PLANE);
@@ -234,7 +299,8 @@ void display()
 	gt.Update();
 	
 	//basic_shadow_mapping_render();
-	pcf_shadow_mapping_render();
+	//pcf_shadow_mapping_render();
+	vsm_shadow_mapping_render();
 
 	glutSwapBuffers();
 
@@ -395,6 +461,32 @@ void LoadPCF(EngineConfig &conf)
 	}
 };
 
+void LoadVSM(EngineConfig &conf)
+{
+	// VSM shadow FBO
+	vsm_shadow_buffer = new RenderTarget(1024,1024);
+	vsmDepthTex = vsm_shadow_buffer->CreateAndAttachTexture(GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE,
+		GL_DEPTH_ATTACHMENT, false, GL_NEAREST, GL_NEAREST, GL_CLAMP, GL_CLAMP);
+	vsmColorTex = vsm_shadow_buffer->CreateAndAttachTexture(GL_RGB32F, GL_RGB, GL_FLOAT, GL_COLOR_ATTACHMENT0, true,
+		GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR_MIPMAP_LINEAR, GL_CLAMP, GL_CLAMP);
+
+	// Blur FBO
+	vsm_blur_buffer = new RenderTarget(1024,1024);
+	vsmBlurColorTex = vsm_blur_buffer->CreateAndAttachTexture(GL_RGB32F, GL_RGB, GL_FLOAT, GL_COLOR_ATTACHMENT0, false,
+		GL_LINEAR, GL_LINEAR, GL_CLAMP, GL_CLAMP);
+
+	// Shaders
+	shaderMan.LoadShader(vsmStoreMomentsShaderID, "Data/Shaders/VSM/VSM_StoreMoments.vert", "Data/Shaders/VSM/VSM_StoreMoments.frag");
+	vsmStoreMomentsShader = shaderMan.GetShader(vsmStoreMomentsShaderID);
+
+	shaderMan.LoadShader(vsmShadowMappingShaderID, "Data/Shaders/VSM/VSM.vert", "Data/Shaders/VSM/VSM.frag");
+	vsmShadowMappingShader = shaderMan.GetShader(vsmShadowMappingShaderID);
+	if(vsmShadowMappingShader)
+	{
+		vsmShadowMappingShader->SetUniform("shadowMap", 7);
+	}
+};
+
 void LoadBasicShadowMapping(EngineConfig &conf)
 {
 	basic_shadow_mapping_buffer = new RenderTarget(1024,1024);
@@ -436,11 +528,14 @@ void Load(EngineConfig &conf)
 	vsmShader = shaderMan.GetShader(vsmShaderID);
 	vsmShader->SetUniform("shadowMap", 7);*/
 
-	//LoadBasicShadowMapping(conf);
+	LoadBasicShadowMapping(conf);
 	LoadPCF(conf);
+	LoadVSM(conf);
 
-	activeBuffer = pcf_shadow_buffer;
+
+	//activeBuffer = pcf_shadow_buffer;
 	//activeBuffer = basic_shadow_mapping_buffer;
+	activeBuffer = vsm_shadow_buffer;
 
 	LoadCamera();
 	gt.Update();
