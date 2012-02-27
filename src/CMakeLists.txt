@@ -10,7 +10,7 @@ set(math_headers float2.h float3.h float4.h Quaternion.h Mat44.h Quaternion.h fl
 set(math_src float2.cpp float3.cpp float4.cpp Mat44.cpp Quaternion.cpp)
 
 # shading
-set(shading_headers Light.h color.h Camera.h RenderTarget.h TextureManager.h Texture.h ShaderManager.h Shader.h)
+set(shading_headers Light.h color.h Camera.h RenderTarget.h TextureManager.h Texture.h ShaderManager.h Shader.h Mesh.h)
 set(shading_src Camera.cpp RenderTarget.cpp TextureManager.cpp Texture.cpp ShaderManager.cpp Shader.cpp)
 
 # utilities

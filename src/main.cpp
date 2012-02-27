@@ -299,7 +299,7 @@ void display()
 	gt.Update();
 	
 	//basic_shadow_mapping_render();
-	//pcf_shadow_mapping_render();
+	pcf_shadow_mapping_render();
 	vsm_shadow_mapping_render();
 
 	glutSwapBuffers();
