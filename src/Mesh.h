@@ -8,6 +8,7 @@
 #include <GL/GLU.h>
 #include <GL/freeglut.h>
 #include "ctypes.h"
+#include "Resource.h"
 
 const GLvoid* BUFFER_OFFSET(const u32 i)
 {
@@ -26,7 +27,7 @@ public:
 };
 
 const u32 VERTEX_POSITION_BUFFER_OFFSET = 0; // at start of struct
-const u32 VERTEX_NORMAL_BUFFER_OFFSET = 12 // 0 + sizeof(float3) == 0+position
+const u32 VERTEX_NORMAL_BUFFER_OFFSET = 12; // 0 + sizeof(float3) == 0+position
 const u32 VERTEX_UV_BUFFER_OFFSET = 24; // 0 + sizeof(float3) + sizeof(float3) == 0+position+normal
 
 struct VERTEX // 32 bytes
@@ -36,12 +37,12 @@ public:
 	float2 uv;
 	
 	VERTEX() {};
-	VERTEX(const float3 &_position, const float3 &_normal, const float3 &_uv)
+	VERTEX(const float3 &_position, const float3 &_normal, const float2 &_uv)
 		: position(_position), normal(_normal), uv(_uv)
 	{}; 
 };
 
-class Mesh
+class Mesh : public Resource
 {
 private:
 	MeshVBO meshvbo;
@@ -52,7 +53,7 @@ private:
 public:
 	Mesh() : polygonFillMode(GL_FILL), geometryDataFormat(GL_TRIANGLES), dbg_vertex_array_sz(0),
 				dbg_index_array_sz(0) {};
-	~Mesh() { Cleanup(); };
+	~Mesh() { Unload(); };
 	
 	GLenum GetPolygonFillMode() const { return polygonFillMode; }
 	void SetPolygonFillMode(const GLenum fillMode) { polygonFillMode = fillMode; };
@@ -63,7 +64,7 @@ public:
 		geometryDataFormat = dataFormat;
 	};
 	
-	void Cleanup()
+	void Unload()
 	{
 		if(meshvbo.meshData) { glDeleteBuffers(1, &meshvbo.meshData); }
 		if(meshvbo.indexData) { glDeleteBuffers(1, &meshvbo.indexData); }
@@ -74,14 +75,14 @@ public:
 	
 	bool BuildVBO(const VERTEX *vertexData, const u32 vertexArraySz, const u32 *indexData, const u32 indexArraySz)
 	{
-		// Cleanup first to avoid memory leaks
-		Cleanup();
+		// Unload first to avoid memory leaks
+		this->Unload();
 		if(!vertexData || !vertexArraySz || !indexData || !indexArraySz) { return false; }
 		
 		// Create buffers
 		glGenBuffers(1, &meshvbo.meshData);
 		glGenBuffers(1, &meshvbo.indexData);
-		if(!meshvbo.meshData || !meshvbo.indexData) { Cleanup(); return false; }
+		if(!meshvbo.meshData || !meshvbo.indexData) { Unload(); return false; }
 		
 		// Bind buffers and send data
 		glBindBuffer(GL_ARRAY_BUFFER, meshvbo.meshData);

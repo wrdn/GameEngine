@@ -2,17 +2,19 @@
 #pragma warning (disable : 4505) // used to disable warning from glut code, "unreferenced local function has been removed"
 #endif
 
-#include "RenderTarget.h"
-#include "EngineConfig.h"
-#include "testobjects.h"
-#include "TextureManager.h"
-#include "ShaderManager.h"
-#include "PerfTimer.h"
-#include "GameTime.h"
-#include "Quaternion.h"
+#include <GL/glew.h>
+
 #include "AntTweakBarFunctions.h"
 #include <AntTweakBar.h>
+
+#include "RenderTarget.h"
 #include "ResourceManager.h"
+#include "ShaderManager.h"
+#include "TextureManager.h"
+#include "EngineConfig.h"
+#include "Quaternion.h"
+#include "GameTime.h"
+#include "testobjects.h"
 
 GameTime gt;
 Camera c;

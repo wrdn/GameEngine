@@ -1,10 +1,12 @@
 #pragma once
 
+#include "Resource.h"
 #include "util.h"
 #include <map>
 #include <memory>
-#include "Resource.h"
 using namespace std;
+
+typedef shared_ptr<Resource> ResourceHandle;
 
 // Resource manager used to manager game resources (e.g. textures, audio)
 // Returns an id to the resource, then use GetResource(id) to get the actual shared
@@ -22,6 +24,12 @@ private:
 	static ResourceManager *resMan;
 	static i32 idProvider; // if user doesn't provide a name for the resource, we create the ID by incrementing this value
 
+	static i32 GenerateResourceMapUniqueID()
+	{
+		while(resMan->resourceMap.count(idProvider)) { ++idProvider; }
+		return idProvider;
+	};
+
 	// constructor and destructor private so only 1 instance can exist (resMan singleton)
 	ResourceManager() {};
 	~ResourceManager() { delete resMan; };
@@ -38,9 +46,9 @@ public:
 	template<class T>
 	i32 CreateResource()
 	{
-		while(resourceMap.count(idProvider)) ++idProvider; // find ID space
-		AddResource(idProvider, 0, new T());
-		return idProvider;
+		i32 id = GenerateResourceMapUniqueID();
+		AddResource(id, 0, new T());
+		return id;
 	};
 
 	template<class T>
@@ -51,29 +59,6 @@ public:
 
 		AddResource(resHash, resourceName, new T());
 		return resHash;
-	};
-
-	template<class T>
-	i32 LoadResource(const char *resourceName, const char *filename)
-	{
-		i32 resHash = GetResourceID(resourceName);
-		if(resourceMap.count(resHash)) { return resHash; };
-
-		T *t = new T();
-		if( ! ((Resource*)t)->Load(filename) )
-		{
-			delete t;
-			return -1;
-		}
-
-		AddResource(resHash, resourceName, t);
-		return resHash;
-	};
-
-	template<class T>
-	i32 LoadResource(const char *filename)
-	{
-		return LoadResource<T>(filename, filename);
 	};
 
 	template<class T>
@@ -93,9 +78,15 @@ public:
 	template<class T>
 	shared_ptr<T> CreateAndGetResource(char *resourceName) { return GetResource<T>(CreateResource<T>(resourceName)); };
 
-	template<class T>
-	shared_ptr<T> LoadAndGetResource(char *resourceName, char *filename) { return GetResource<T>(LoadResource<T>(resourceName, filename)); };
-
-	template<class T>
-	shared_ptr<T> LoadAndGetResource(char *filename) { return GetResource<T>(LoadResource<T>(filename)); };
+	// Removes the resource from the map of resources (hence the current resource can no longer be accessed)
+	// Note it deletes no memory - this should be done in the destructor. Then when the last object has finished
+	// using the memory, the shared_ptr destructor will automatically delete the object (which will clean itself up)
+	void RemoveResource(i32 id)
+	{
+		if(resourceMap.count(id))
+		{
+			resourceMap.erase(id);
+		}
+	};
+	void RemoveResource(const char *resourceName) { return RemoveResource(GetResourceID(resourceName)); };
 };

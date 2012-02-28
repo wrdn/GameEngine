@@ -65,7 +65,6 @@
              on 'test' only check type, not whether we support this variant
 */
 
-
 #ifndef STBI_INCLUDE_STB_IMAGE_H
 #define STBI_INCLUDE_STB_IMAGE_H
 

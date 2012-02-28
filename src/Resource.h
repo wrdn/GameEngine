@@ -15,9 +15,7 @@ public:
 	void SetID(i32 _id) { id = _id; };
 	i32 GetID() const { return id; };
 
-	// if statement gets rid of code warning about unused variable
-	// All resources have a load function so we can load thru the resourcemanager
-	virtual bool Load(const char* filename) { if(filename){} return true; };
+	// All Resources forced to overload this function
+	// This function should be added to the destructor of each Resource
+	virtual void Unload()=0;
 };
-
-typedef std::shared_ptr<Resource> ResourceHandle; // use this format to create handles for other resource types e.g. Texture
