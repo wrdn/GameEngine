@@ -4,9 +4,6 @@
 
 #include <GL/glew.h>
 
-#include "AntTweakBarFunctions.h"
-#include <AntTweakBar.h>
-
 #include "RenderTarget.h"
 #include "ResourceManager.h"
 #include "ShaderManager.h"
@@ -15,6 +12,9 @@
 #include "Quaternion.h"
 #include "GameTime.h"
 #include "testobjects.h"
+
+#include "AntTweakBarFunctions.h"
+#include <AntTweakBar.h>
 
 GameTime gt;
 Camera c;

@@ -1,7 +1,8 @@
 #pragma once
 
-#include "ctypes.h"
 #include <GL/glew.h>
+#include "ctypes.h"
+#include "Resource.h"
 
 enum OpenGLTextureSlot
 {
@@ -15,47 +16,31 @@ enum OpenGLTextureSlot
 	SLOT_GL_TEXTURE_7 = GL_TEXTURE7,
 };
 
-// Used to manage textures from OpenGL.
-class Texture
+class Texture : public Resource
 {
 private:
-	u32 id;
-	u32 minFilter, magFilter, wrapS, wrapT; // automatically set on activation
+	u32 textureID;
+	u32 minFilter, magFilter, wrapS, wrapT; // common texture properties
 	u32 width, height;
-	OpenGLTextureSlot textureSlot; // GL_TEXTURE_0 to GL_TEXTURE_7, slots are at GL_TEXTURE_0+n
-public:
-	Texture(void);
-	explicit Texture(const u32 _id);
-	~Texture(void);
+	OpenGLTextureSlot glTexSlot;
 
-	const u32 GetID() const;
-	void SetID(const u32 _id);
+public:
+	Texture() : textureID(0), minFilter(GL_LINEAR_MIPMAP_LINEAR), magFilter(GL_LINEAR_MIPMAP_LINEAR), wrapS(GL_REPEAT), wrapT(GL_REPEAT),
+		width(0), height(0), glTexSlot(SLOT_GL_TEXTURE_0) {};
+	~Texture() { Unload(); };
+
+	bool Load(const char *filename);
+
+	void Unload();
 
 	void Activate() const;
 	void Deactivate() const;
 
-	// http://www.opengl.org/sdk/docs/man/xhtml/glTexParameter.xml
-	void SetMinFilter(const u32 _minFilter);
-	void SetMagFilter(const u32 _magFilter);
-	void SetWrapS(const u32 wrapMode);
-	void SetWrapT(const u32 wrapMode);
+	void SetParameteri(GLenum param, u32 v) const;
+	void SetParameterf(GLenum param, f32 v) const;
 
-	const u32 GetMinFilter() const;
-	const u32 GetMagFilter() const;
-	const u32 GetWrapS() const;
-	const u32 GetWrapT() const;
-
-	void SetParameteri(u32 param, u32 v) const;
-
-	void SetWidth(const u32 _width);
-	void SetHeight(const u32 _height);
-	const u32 GetWidth() const;
-	const u32 GetHeight() const;
-
-	void SetTextureSlot(OpenGLTextureSlot s) { textureSlot = s; };
-
-	const OpenGLTextureSlot GetTextureSlot() const { return textureSlot; };
-
-	// returns a value in range 0 to 7 (used by shader system)
-	const u32 GetTextureSlotIndex() const { return textureSlot - SLOT_GL_TEXTURE_0; };
+	const u32 GetGLTextureID() const { return textureID; };
+	void SetTextureSlot(OpenGLTextureSlot s) { glTexSlot = s; };
+	const OpenGLTextureSlot GetTextureSlot() const { return glTexSlot; };
+	const u32 GetTextureSlotIndex() const { return glTexSlot - SLOT_GL_TEXTURE_0; };
 };

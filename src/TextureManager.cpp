@@ -1,5 +1,4 @@
 #include "TextureManager.h"
-#include "stb_image.h"
 #include "util.h"
 #include <GL\GLU.h>
 
@@ -32,33 +31,10 @@ Texture* TextureManager::LoadTextureFromFile(const c8* const _filename)
 	unsigned long filename_hash = hash_djb2((const uc8*)_filename);
 	if(Texture *t = GetTexture(filename_hash)) { return t; };
 
-	int x, y, n;
-	unsigned char *pixdata = stbi_load(_filename, &x, &y, &n, 0);
-	if(!pixdata || n>4 || n<3) { return 0; }
-
-	u32 id; glGenTextures(1, &id);
-	if(id)
+	Texture t;
+	if(t.Load(_filename))
 	{
-		glBindTexture(GL_TEXTURE_2D, id);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		
-		int internalFormat = GL_RGBA8, format = GL_RGBA;
-		if(n == 3) { internalFormat = GL_RGB8; format = GL_RGB; }
-
-		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, x, y, 0, format, GL_UNSIGNED_BYTE, pixdata); 
-		glGenerateMipmap(GL_TEXTURE_2D);
-
-		glBindTexture(GL_TEXTURE_2D, 0);
-
-		stb_free(pixdata);
-
-		Texture tex(id);
-		tex.SetWidth(x);
-		tex.SetHeight(y);
-		textures[filename_hash] = tex;
+		textures[filename_hash] = t;
 		return &textures[filename_hash];
 	}
 	return 0;

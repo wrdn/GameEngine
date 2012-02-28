@@ -13,7 +13,7 @@ ResourceManager& ResourceManager::get() // returns reference to help avoid mucki
 
 void ResourceManager::AddResource(i32 id, const char *name, Resource *r)
 {
-	r->SetID(id);
+	r->SetResourceID(id);
 	r->SetName(name);
 	resourceMap[id] = shared_ptr<Resource>(r);
 };

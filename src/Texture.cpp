@@ -1,24 +1,58 @@
 #include "Texture.h"
+#include "stb_image.h"
 
-Texture::Texture(void)
-	: id(0), minFilter(GL_LINEAR_MIPMAP_LINEAR), magFilter(GL_LINEAR_MIPMAP_LINEAR),
-	wrapS(GL_REPEAT), wrapT(GL_REPEAT), width(0), height(0), textureSlot(SLOT_GL_TEXTURE_0)
+void Texture::SetParameteri(GLenum param, u32 v) const
 {
-}
-
-Texture::Texture(const u32 _id)
-	: id(_id), minFilter(GL_LINEAR_MIPMAP_LINEAR), magFilter(GL_LINEAR_MIPMAP_LINEAR),
-	wrapS(GL_REPEAT), wrapT(GL_REPEAT), width(0), height(0), textureSlot(SLOT_GL_TEXTURE_0)
-{
+	Activate();
+	glTexParameteri(GL_TEXTURE_2D, param, v);
+	Deactivate();
 };
 
-Texture::~Texture(void)
+void Texture::SetParameterf(GLenum param, f32 v) const
 {
-}
+	Activate();
+	glTexParameterf(GL_TEXTURE_2D, param, v);
+	Deactivate();
+};
 
-const u32 Texture::GetID() const { return id; };
+bool Texture::Load(const char *filename)
+{
+	Unload();
 
-void Texture::SetID(const u32 _id) { id=_id; };
+	int x, y, n;
+	unsigned char *pixdata = stbi_load(filename, &x, &y, &n, 0);
+	if(!pixdata || n>4 || n<3) { return false; }
+
+	glGenTextures(1, &textureID);
+	if(textureID)
+	{
+		glBindTexture(GL_TEXTURE_2D, textureID);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, minFilter);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, magFilter);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapS);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapT);
+
+		int internalFormat = GL_RGBA8, format = GL_RGBA;
+		if(n == 3) { internalFormat = GL_RGB8; format = GL_RGB; }
+		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, x, y, 0, format, GL_UNSIGNED_BYTE, pixdata); 
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		glBindTexture(GL_TEXTURE_2D, 0);
+		stb_free(pixdata);
+
+		return true;
+	}
+	return false;
+};
+
+void Texture::Unload()
+{
+	if(textureID)
+	{
+		glDeleteTextures(1, &textureID);
+	}
+	textureID = 0;
+};
 
 void Texture::Activate() const
 {
@@ -28,75 +62,10 @@ void Texture::Activate() const
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, magFilter);
 	
-	glBindTexture(GL_TEXTURE_2D, GetID());
+	glBindTexture(GL_TEXTURE_2D, GetGLTextureID());
 };
 
 void Texture::Deactivate() const
 {
 	glBindTexture(GL_TEXTURE_2D, 0);
-};
-
-void Texture::SetMinFilter(const u32 _minFilter)
-{
-	minFilter = _minFilter;
-};
-
-void Texture::SetMagFilter(const u32 _magFilter)
-{
-	magFilter = _magFilter;
-};
-
-void Texture::SetWrapS(const u32 wrapMode)
-{
-	wrapS = wrapMode;
-};
-
-void Texture::SetWrapT(const u32 wrapMode)
-{
-	wrapT = wrapMode;
-};
-
-const u32 Texture::GetMinFilter() const
-{
-	return minFilter;
-};
-
-const u32 Texture::GetMagFilter() const
-{
-	return magFilter;
-};
-
-const u32 Texture::GetWrapS() const
-{
-	return wrapS;
-};
-
-const u32 Texture::GetWrapT() const
-{
-	return wrapT;
-};
-
-void Texture::SetParameteri(u32 param, u32 v) const
-{
-	glTexParameteri(GL_TEXTURE_2D, param, v);
-};
-
-void Texture::SetWidth(const u32 _width)
-{
-	width = _width;
-};
-
-void Texture::SetHeight(const u32 _height)
-{
-	height = _height;
-};
-
-const u32 Texture::GetWidth() const
-{
-	return width;
-};
-
-const u32 Texture::GetHeight() const
-{
-	return height;
 };

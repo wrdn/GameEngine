@@ -6,8 +6,6 @@
 #include <memory>
 using namespace std;
 
-typedef shared_ptr<Resource> ResourceHandle;
-
 // Resource manager used to manager game resources (e.g. textures, audio)
 // Returns an id to the resource, then use GetResource(id) to get the actual shared
 // pointer to it. Anything inheriting from Resource can be managed by this
