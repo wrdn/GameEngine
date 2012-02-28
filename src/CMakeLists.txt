@@ -10,8 +10,12 @@ set(math_headers float2.h float3.h float4.h Quaternion.h Mat44.h Quaternion.h fl
 set(math_src float2.cpp float3.cpp float4.cpp Mat44.cpp Quaternion.cpp)
 
 # shading
-set(shading_headers Light.h color.h Camera.h RenderTarget.h TextureManager.h Texture.h ShaderManager.h Shader.h Mesh.h)
-set(shading_src Camera.cpp RenderTarget.cpp TextureManager.cpp Texture.cpp ShaderManager.cpp Shader.cpp)
+set(shading_headers Light.h color.h Camera.h)
+set(shading_src Camera.cpp)
+
+# resource managers
+set(resource_management_headers RenderTarget.h TextureManager.h Texture.h ShaderManager.h Shader.h Mesh.h ResourceManager.h Resource.h)
+set(resource_management_src RenderTarget.cpp TextureManager.cpp Texture.cpp ShaderManager.cpp Shader.cpp ResourceManager.cpp)
 
 # utilities
 set(util_headers ctypes.h strutils.h util.h AppConfig.h EngineConfig.h Namable.h GameTime.h PerfTimer.h stb_image.h testobjects.h AntTweakBarFunctions.h)
@@ -24,13 +28,16 @@ set(others main.cpp)
 source_group("Header Files\\Math" FILES ${math_headers})
 source_group("Header Files\\Shading" FILES ${shading_headers})
 source_group("Header Files\\Utilities" FILES ${util_headers})
+source_group("Header Files\\Resource Management" FILES ${resource_management_headers})
 
 source_group("Source Files\\Math" FILES ${math_src})
 source_group("Source Files\\Shading" FILES ${shading_src})
 source_group("Source Files\\Utilities" FILES ${util_src})
+source_group("Source Files\\Resource Management" FILES ${resource_management_src})
 
 # concatenate the lists
-set(source_files ${math_headers} ${math_src} ${shading_headers} ${shading_src} ${util_headers} ${util_src} ${others})
+set(source_files ${math_headers} ${math_src} ${shading_headers} ${shading_src} ${util_headers} ${util_src} ${resource_management_headers}
+                 ${resource_management_src} ${others})
 
 add_executable("${PROJECT_NAME}" ${source_files})
 

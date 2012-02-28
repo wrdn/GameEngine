@@ -1,18 +1,14 @@
 #pragma once
 
-#include <string>
-
-class Namable // Debug functionality - inherited item can be given a name (useful for debugging)
+class Namable
 {
-#ifdef _DEBUG
 private:
-	std::string name;
+	char *name;
 public:
-	inline void SetName(const std::string &m) { name = m; };
-	inline const std::string &GetName() { return name; };
-#else
-public:
-	inline void SetName(const std::string &m) { if(m.size()){} };
-	inline const std::string GetName() { return ""; };
-#endif
+	Namable() : name("") {};
+	Namable(const char *c) : name((char*)c) {};
+	~Namable() {};
+
+	inline void SetName(const char *m) { name = (char*)m; };
+	inline const char* GetName() { return name; };
 };

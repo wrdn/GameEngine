@@ -131,7 +131,7 @@ void EngineConfig::ParseCameras(rapidxml::xml_node<> *base_camera_node)
 
 		// Once here, we know the camera has been parsed successfully, so we can check the name
 		// of the camera against default_camera
-		cam.SetName(cameraName);
+		cam.SetName(cameraName.c_str());
 		cameras.push_back(cam);
 
 		if(cameraName == default_camera_name)

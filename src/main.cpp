@@ -12,6 +12,7 @@
 #include "Quaternion.h"
 #include "AntTweakBarFunctions.h"
 #include <AntTweakBar.h>
+#include "ResourceManager.h"
 
 GameTime gt;
 Camera c;
