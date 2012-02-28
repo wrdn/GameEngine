@@ -7,7 +7,6 @@
 #include "RenderTarget.h"
 #include "ResourceManager.h"
 #include "ShaderManager.h"
-#include "TextureManager.h"
 #include "EngineConfig.h"
 #include "Quaternion.h"
 #include "GameTime.h"
@@ -43,9 +42,9 @@ FBOTexture vsmDepthTex, vsmColorTex, vsmBlurColorTex;
 int windowWidth, windowHeight;
 f32 angle=0, ltangle=0;
 bool fboactive=false;
-Texture *test_texture;
-TextureManager texMan;
 ShaderManager shaderMan;
+
+TextureHandle test_tex_handle;
 
 GLenum fboBuff[] = { GL_COLOR_ATTACHMENT0 };
 GLenum windowBuff[] = { GL_BACK };
@@ -302,8 +301,10 @@ void display()
 	gt.Update();
 	
 	//basic_shadow_mapping_render();
-	pcf_shadow_mapping_render();
-	vsm_shadow_mapping_render();
+	//pcf_shadow_mapping_render();
+	//vsm_shadow_mapping_render();
+
+	DrawFullScreenQuad(test_tex_handle->GetGLTextureID());
 
 	glutSwapBuffers();
 
@@ -522,7 +523,8 @@ void Load(EngineConfig &conf)
 	originTeapotRotation = Quaternion(float3(0,1,0), DEGTORAD(0));
 	finalTeapotRotation = Quaternion(float3(0,1,0), DEGTORAD(190));
 
-	test_texture = texMan.LoadTextureFromFile("Data/test.jpg");
+	test_tex_handle = ResourceManager::get().CreateAndGetResource<Texture>();
+	test_tex_handle->Load("Data/test.jpg");
 
 	/*shaderMan.LoadShader(vsmDepthWriteShaderID, "Data/Shaders/WriteDepth.vert", "Data/Shaders/WriteDepth.frag");
 	vsmDepthWriterShader = shaderMan.GetShader(vsmDepthWriteShaderID);

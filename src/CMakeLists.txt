@@ -11,11 +11,11 @@ set(math_src float2.cpp float3.cpp float4.cpp Mat44.cpp Quaternion.cpp)
 
 # shading
 set(shading_headers Light.h color.h Camera.h RenderTarget.h GraphicsObject.h Material.h Mesh.h Shader.h Texture.h)
-set(shading_src Camera.cpp RenderTarget.cpp GraphicsObject.cpp Material.cpp Mesh.cpp Shader.cpp Texture.cpp)
+set(shading_src GraphicsObject.cpp Material.cpp Mesh.cpp Shader.cpp Texture.cpp)
 
 # resource managers
-set(resource_management_headers RenderTarget.h TextureManager.h ShaderManager.h ResourceManager.h Resource.h)
-set(resource_management_src RenderTarget.cpp TextureManager.cpp ShaderManager.cpp ResourceManager.cpp)
+set(resource_management_headers RenderTarget.h ShaderManager.h ResourceManager.h Resource.h)
+set(resource_management_src ShaderManager.cpp ResourceManager.cpp)
 
 # utilities
 set(util_headers ctypes.h strutils.h util.h AppConfig.h EngineConfig.h Namable.h GameTime.h PerfTimer.h stb_image.h testobjects.h AntTweakBarFunctions.h)

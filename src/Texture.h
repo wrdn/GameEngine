@@ -27,7 +27,8 @@ private:
 public:
 	Texture() : textureID(0), minFilter(GL_LINEAR_MIPMAP_LINEAR), magFilter(GL_LINEAR_MIPMAP_LINEAR), wrapS(GL_REPEAT), wrapT(GL_REPEAT),
 		width(0), height(0), glTexSlot(SLOT_GL_TEXTURE_0) {};
-	~Texture() { Unload(); };
+
+	~Texture() { Unload(); }; // REMEMBER: CAREFUL WITH TEXTURE ON STACK, TEXTURE IS DELETED IN DESTRUCTOR
 
 	bool Load(const char *filename);
 
@@ -44,3 +45,5 @@ public:
 	const OpenGLTextureSlot GetTextureSlot() const { return glTexSlot; };
 	const u32 GetTextureSlotIndex() const { return glTexSlot - SLOT_GL_TEXTURE_0; };
 };
+
+typedef std::shared_ptr<Texture> TextureHandle;

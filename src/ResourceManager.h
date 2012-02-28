@@ -71,10 +71,16 @@ public:
 
 	// Preferred functions, built out of CreateResource() and GetResource()
 	template<class T>
-	shared_ptr<T> CreateAndGetResource() { return GetResource<T>(CreateResource<T>()); };
+	shared_ptr<T> CreateAndGetResource()
+	{
+		return GetResource<T>(CreateResource<T>());
+	};
 	
 	template<class T>
-	shared_ptr<T> CreateAndGetResource(char *resourceName) { return GetResource<T>(CreateResource<T>(resourceName)); };
+	shared_ptr<T> CreateAndGetResource(char *resourceName)
+	{
+		return GetResource<T>(CreateResource<T>(resourceName));
+	};
 
 	// Removes the resource from the map of resources (hence the current resource can no longer be accessed)
 	// Note it deletes no memory - this should be done in the destructor. Then when the last object has finished
