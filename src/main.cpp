@@ -2,6 +2,8 @@
 #pragma warning (disable : 4505) // used to disable warning from glut code, "unreferenced local function has been removed"
 #endif
 
+#include "C:\Program Files (x86)\Visual Leak Detector\include\vld.h"
+
 #include <GL/glew.h>
 
 #include "RenderTarget.h"
@@ -534,8 +536,8 @@ void Load(EngineConfig &conf)
 	vsmShader->SetUniform("shadowMap", 7);*/
 
 	LoadBasicShadowMapping(conf);
-	LoadPCF(conf);
-	LoadVSM(conf);
+	//LoadPCF(conf);
+	//LoadVSM(conf);
 
 
 	//activeBuffer = pcf_shadow_buffer;
@@ -580,6 +582,8 @@ int main(i32 argc, c8 **argv)
 	Load(conf);
 
 	glutMainLoop();
+
+	ResourceManager::Cleanup();
 
 	return 0;
 };

@@ -30,13 +30,19 @@ private:
 
 	// constructor and destructor private so only 1 instance can exist (resMan singleton)
 	ResourceManager() {};
-	~ResourceManager() { delete resMan; };
+	~ResourceManager() {};
 
 	void AddResource(i32 id, const char *name, Resource *r);
 
 public:
 	// get the resource manager singleton
 	static ResourceManager& get();
+
+	static void Cleanup()
+	{
+		delete resMan;
+		resMan = 0;
+	};
 
 	// gets resource ID using string hashing given name (str)
 	static i32 GetResourceID(const char *str) { return (i32)hash_djb2((const uc8*)str); };

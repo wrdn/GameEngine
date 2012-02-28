@@ -195,5 +195,6 @@ bool EngineConfig::ParseConfigFile(const c8* xml_config_filename)
 	// Parse <lights> options
 	ParseLights(rootNode->first_node("lights", CASE_INSENSITIVE));
 
+	delete [] srcData;
 	return false;
 };
