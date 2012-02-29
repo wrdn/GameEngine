@@ -42,8 +42,6 @@ bool Mesh::BuildVBO(const VERTEX *vertexData, const u32 vertexArraySz, const u32
 
 void Mesh::Draw() const
 {
-	glPolygonMode(GL_FRONT_AND_BACK, polygonFillMode);
-
 	glBindBuffer(GL_ARRAY_BUFFER, meshvbo.meshData);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshvbo.indexData);
 

@@ -9,9 +9,13 @@ ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 set(math_headers float2.h float3.h float4.h Quaternion.h Mat44.h Quaternion.h float4_sse.h)
 set(math_src float2.cpp float3.cpp float4.cpp Mat44.cpp Quaternion.cpp)
 
+# geometry
+set(geom_headers GraphicsObject.h Mesh.h Sphere.h)
+set(geom_src GraphicsObject.cpp Mesh.cpp Sphere.cpp)
+
 # shading
-set(shading_headers Light.h color.h Camera.h RenderTarget.h GraphicsObject.h Material.h Mesh.h Shader.h ShaderObject.h Texture.h)
-set(shading_src GraphicsObject.cpp Material.cpp Mesh.cpp Shader.cpp ShaderObject.cpp Texture.cpp)
+set(shading_headers Light.h color.h Camera.h RenderTarget.h Material.h Shader.h ShaderObject.h Texture.h)
+set(shading_src Material.cpp Shader.cpp ShaderObject.cpp Texture.cpp)
 
 # resource managers
 set(resource_management_headers RenderTarget.h ResourceManager.h Resource.h)
@@ -29,15 +33,17 @@ source_group("Header Files\\Math" FILES ${math_headers})
 source_group("Header Files\\Shading" FILES ${shading_headers})
 source_group("Header Files\\Utilities" FILES ${util_headers})
 source_group("Header Files\\Resource Management" FILES ${resource_management_headers})
+source_group("Header Files\\Geometry" FILES ${geom_headers})
 
 source_group("Source Files\\Math" FILES ${math_src})
 source_group("Source Files\\Shading" FILES ${shading_src})
 source_group("Source Files\\Utilities" FILES ${util_src})
 source_group("Source Files\\Resource Management" FILES ${resource_management_src})
+source_group("Source Files\\Geometry" FILES ${geom_src})
 
 # concatenate the lists
 set(source_files ${math_headers} ${math_src} ${shading_headers} ${shading_src} ${util_headers} ${util_src} ${resource_management_headers}
-                 ${resource_management_src} ${others})
+                 ${resource_management_src} ${geom_headers} ${geom_src} ${others})
 
 add_executable("${PROJECT_NAME}" ${source_files})
 

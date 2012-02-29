@@ -40,6 +40,9 @@ bool Texture::Load(const char *filename)
 		glBindTexture(GL_TEXTURE_2D, 0);
 		stb_free(pixdata);
 
+		width = x;
+		height = y;
+
 		return true;
 	}
 	return false;

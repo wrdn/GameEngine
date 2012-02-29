@@ -37,17 +37,13 @@ class Mesh : public Resource
 {
 private:
 	MeshVBO meshvbo;
-	GLenum polygonFillMode; // GL_POINTS, GL_LINE, GL_FILL
 	GLenum geometryDataFormat; // GL_TRIANGLES, GL_TRIANGLE_STRIP, GL_QUADS, GL_POINTS etc 
 	
 	u32 dbg_vertex_array_sz, dbg_index_array_sz;
 public:
-	Mesh() : polygonFillMode(GL_FILL), geometryDataFormat(GL_TRIANGLES), dbg_vertex_array_sz(0),
+	Mesh() : geometryDataFormat(GL_TRIANGLES), dbg_vertex_array_sz(0),
 				dbg_index_array_sz(0) {};
 	~Mesh() { Unload(); };
-	
-	GLenum GetPolygonFillMode() const { return polygonFillMode; }
-	void SetPolygonFillMode(const GLenum fillMode) { polygonFillMode = fillMode; };
 	
 	GLenum GetGeometryDataFormat() const { return geometryDataFormat; };
 	void SetGeometryDataFormat(const GLenum dataFormat) // usually GL_TRIANGLES, but can change e.g. to GL_QUADS, GL_POINTS, GL_TRIANGLE_STRIP etc

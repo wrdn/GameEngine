@@ -10,6 +10,7 @@
 #include "Quaternion.h"
 #include "GameTime.h"
 #include "testobjects.h"
+#include "Sphere.h"
 
 #include "AntTweakBarFunctions.h"
 #include <AntTweakBar.h>
@@ -53,6 +54,8 @@ const float FAR_PLANE = 200;
 
 f32 radius = 20;
 f32 anglet=0;
+
+Sphere test_sphere;
 
 void DrawFullScreenQuad(u32 texID)
 {
@@ -300,10 +303,16 @@ void display()
 	gt.Update();
 	
 	//basic_shadow_mapping_render();
-	pcf_shadow_mapping_render();
+	//pcf_shadow_mapping_render();
 	//vsm_shadow_mapping_render();
 
 	//DrawFullScreenQuad(test_tex_handle->GetGLTextureID());
+
+	glClearColor(0,0,0,1);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	test_sphere.SetPosition(float3(0,0,-30));
+	test_sphere.Draw();
 
 	glutSwapBuffers();
 
@@ -508,9 +517,11 @@ void LoadCamera()
 {
 	glutWarpPointer(windowWidth/2, windowHeight/2); // make sure to do this before initialising the camera below (otherwise, the camera will immediately be placed somewhere random)
 
-	c.speed = 10;
-	c.position.set(-3,5,-8);
-	c.target.set(0.25,-0.5,1);
+	c.position.set(0,0,-10);
+	c.target.set(0,0,1);
+	//c.speed = 10;
+	//c.position.set(-3,5,-8);
+	//c.target.set(0.25,-0.5,1);
 };
 
 void Load(EngineConfig &conf)
@@ -524,6 +535,9 @@ void Load(EngineConfig &conf)
 	//TextureHandle tex2 = ResourceManager::get().CreateAndGetResource<Texture>("testjpeg");
 
 	test_tex_handle = LoadTexture("Data/test.jpg", "testjpeg");
+
+	test_sphere.Create(11.3f,10,10);
+	test_sphere.AddTexture(test_tex_handle);
 
 	/*shaderMan.LoadShader(vsmDepthWriteShaderID, "Data/Shaders/WriteDepth.vert", "Data/Shaders/WriteDepth.frag");
 	vsmDepthWriterShader = shaderMan.GetShader(vsmDepthWriteShaderID);
