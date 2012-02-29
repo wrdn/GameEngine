@@ -6,7 +6,6 @@
 
 #include "RenderTarget.h"
 #include "ResourceManager.h"
-#include "ShaderManager.h"
 #include "EngineConfig.h"
 #include "Quaternion.h"
 #include "GameTime.h"
@@ -27,22 +26,22 @@ RenderTargetHandle vsm_shadow_buffer, vsm_blur_buffer; // http://fabiensanglard.
 RenderTargetHandle activeBuffer;
 
 // BASIC SHADOW MAPPING
-u32 shadowMappingShaderID; Shader *shadowMappingShader;
+//u32 shadowMappingShaderID; Shader *shadowMappingShader;
+ShaderHandle shadowMappingShader;
 FBOTexture colorTex, depthTex;
 
 // PCF SHADOW MAPPING
-u32 pcfShadowMappingShaderID; Shader *pcfShadowMappingShader;
+ShaderHandle pcfShadowMappingShader;
 FBOTexture pcfDepthTex;
 
 // VSM SHADOW MAPPING
 u32 vsmShadowMappingShaderID, vsmStoreMomentsShaderID, vsmBlurShaderID;
-Shader *vsmShadowMappingShader, *vsmStoreMomentsShader, *vsmBlurShader;
+ShaderHandle vsmShadowMappingShader, vsmStoreMomentsShader, vsmBlurShader;
 FBOTexture vsmDepthTex, vsmColorTex, vsmBlurColorTex;
 
 int windowWidth, windowHeight;
 f32 angle=0, ltangle=0;
 bool fboactive=false;
-ShaderManager shaderMan;
 
 TextureHandle test_tex_handle;
 
@@ -300,8 +299,8 @@ void display()
 {
 	gt.Update();
 	
-	basic_shadow_mapping_render();
-	//pcf_shadow_mapping_render();
+	//basic_shadow_mapping_render();
+	pcf_shadow_mapping_render();
 	//vsm_shadow_mapping_render();
 
 	//DrawFullScreenQuad(test_tex_handle->GetGLTextureID());
@@ -445,18 +444,15 @@ void setup_lights()
 
 void LoadPCF(EngineConfig &conf)
 {
-	//pcf_shadow_buffer = new RenderTarget(1024,1024);
-	pcf_shadow_buffer = ResourceManager::get().CreateAndGetResource<RenderTarget>();
-	pcf_shadow_buffer->SetWidthAndHeight(1024,1024);
+	pcf_shadow_buffer = CreateRenderTarget(1024,1024);
 	pcf_shadow_buffer->SetDrawReadBufferState(GL_NONE, GL_NONE);
 	pcfDepthTex = pcf_shadow_buffer->CreateAndAttachTexture(
 		GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE,
 		GL_DEPTH_ATTACHMENT, false, GL_NEAREST, GL_NEAREST,
 		GL_CLAMP, GL_CLAMP);
 
-	shaderMan.LoadShader(pcfShadowMappingShaderID, "Data/Shaders/PCF_ShadowMapping.vert",
-		"Data/Shaders/PCF_ShadowMapping.frag");
-	pcfShadowMappingShader = shaderMan.GetShader(pcfShadowMappingShaderID);
+
+	pcfShadowMappingShader = LoadShader("Data/Shaders/PCF_ShadowMapping.vert", "Data/Shaders/PCF_ShadowMapping.frag", "pcf_shadow_mapping_shader");
 	if(pcfShadowMappingShader)
 	{
 		pcfShadowMappingShader->SetUniform("ShadowMap", 7);
@@ -470,25 +466,19 @@ void LoadPCF(EngineConfig &conf)
 void LoadVSM(EngineConfig &conf)
 {
 	// VSM shadow FBO
-	vsm_shadow_buffer = ResourceManager::get().CreateAndGetResource<RenderTarget>();
-	vsm_shadow_buffer->SetWidthAndHeight(1024,1024);
+	vsm_shadow_buffer = CreateRenderTarget(1024,1024, "vsm_shadow_buffer");
 	vsmDepthTex = vsm_shadow_buffer->CreateAndAttachTexture(GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE,
 		GL_DEPTH_ATTACHMENT, false, GL_NEAREST, GL_NEAREST, GL_CLAMP, GL_CLAMP);
 	vsmColorTex = vsm_shadow_buffer->CreateAndAttachTexture(GL_RGB32F, GL_RGB, GL_FLOAT, GL_COLOR_ATTACHMENT0, true,
 		GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR_MIPMAP_LINEAR, GL_CLAMP, GL_CLAMP);
 
 	// Blur FBO
-	vsm_blur_buffer = ResourceManager::get().CreateAndGetResource<RenderTarget>();
-	vsm_blur_buffer->SetWidthAndHeight(1024,1024);
+	vsm_blur_buffer = CreateRenderTarget(1024,1024,"vsm_blur_buffer");
 	vsmBlurColorTex = vsm_blur_buffer->CreateAndAttachTexture(GL_RGB32F, GL_RGB, GL_FLOAT, GL_COLOR_ATTACHMENT0, false,
 		GL_LINEAR, GL_LINEAR, GL_CLAMP, GL_CLAMP);
 
 	// Shaders
-	shaderMan.LoadShader(vsmStoreMomentsShaderID, "Data/Shaders/VSM/VSM_StoreMoments.vert", "Data/Shaders/VSM/VSM_StoreMoments.frag");
-	vsmStoreMomentsShader = shaderMan.GetShader(vsmStoreMomentsShaderID);
-
-	shaderMan.LoadShader(vsmShadowMappingShaderID, "Data/Shaders/VSM/VSM.vert", "Data/Shaders/VSM/VSM.frag");
-	vsmShadowMappingShader = shaderMan.GetShader(vsmShadowMappingShaderID);
+	vsmStoreMomentsShader = LoadShader("Data/Shaders/VSM/VSM_StoreMoments.vert", "Data/Shaders/VSM/VSM_StoreMoments.frag", "vsm_store_moments_shader");
 	if(vsmShadowMappingShader)
 	{
 		vsmShadowMappingShader->SetUniform("shadowMap", 7);
@@ -497,8 +487,7 @@ void LoadVSM(EngineConfig &conf)
 
 void LoadBasicShadowMapping(EngineConfig &conf)
 {
-	basic_shadow_mapping_buffer = ResourceManager::get().CreateAndGetResource<RenderTarget>();
-	basic_shadow_mapping_buffer->SetWidthAndHeight(1024,1024);
+	basic_shadow_mapping_buffer = CreateRenderTarget(1024,1024,"basic_shadow_mapping_buffer");
 
 	basic_shadow_mapping_buffer->SetDrawReadBufferState(GL_NONE, GL_NONE);
 	depthTex = basic_shadow_mapping_buffer->CreateAndAttachTexture(
@@ -510,8 +499,8 @@ void LoadBasicShadowMapping(EngineConfig &conf)
 		GL_NEAREST, GL_NEAREST,
 		GL_CLAMP, GL_CLAMP);
 
-	shaderMan.LoadShader(shadowMappingShaderID, "Data/Shaders/ShadowMapping.vert", "Data/Shaders/ShadowMapping.frag");
-	shadowMappingShader = shaderMan.GetShader(shadowMappingShaderID);
+	shadowMappingShader = LoadShader("Data/Shaders/ShadowMapping.vert", "Data/Shaders/ShadowMapping.frag", "shadow_mapping_shader");
+
 	shadowMappingShader->SetUniform("ShadowMap", 7);
 };
 
@@ -529,11 +518,12 @@ void Load(EngineConfig &conf)
 	originTeapotRotation = Quaternion(float3(0,1,0), DEGTORAD(0));
 	finalTeapotRotation = Quaternion(float3(0,1,0), DEGTORAD(190));
 
-	test_tex_handle = ResourceManager::get().CreateAndGetResource<Texture>("testjpeg");
-	test_tex_handle->Load("Data/test.jpg");
-
+	//test_tex_handle = ResourceManager::get().CreateAndGetResource<Texture>("testjpeg");
+	//test_tex_handle->Load("Data/test.jpg");
 	// returns the same data
-	TextureHandle tex2 = ResourceManager::get().CreateAndGetResource<Texture>("testjpeg");
+	//TextureHandle tex2 = ResourceManager::get().CreateAndGetResource<Texture>("testjpeg");
+
+	test_tex_handle = LoadTexture("Data/test.jpg", "testjpeg");
 
 	/*shaderMan.LoadShader(vsmDepthWriteShaderID, "Data/Shaders/WriteDepth.vert", "Data/Shaders/WriteDepth.frag");
 	vsmDepthWriterShader = shaderMan.GetShader(vsmDepthWriteShaderID);
@@ -543,12 +533,11 @@ void Load(EngineConfig &conf)
 	vsmShader->SetUniform("shadowMap", 7);*/
 
 	LoadBasicShadowMapping(conf);
-	//LoadPCF(conf);
+	LoadPCF(conf);
 	//LoadVSM(conf);
 
-
-	//activeBuffer = pcf_shadow_buffer;
-	activeBuffer = basic_shadow_mapping_buffer;
+	activeBuffer = pcf_shadow_buffer;
+	//activeBuffer = basic_shadow_mapping_buffer;
 	//activeBuffer = vsm_shadow_buffer;
 
 	LoadCamera();

@@ -75,6 +75,12 @@ public:
 		return shared_ptr<T>(0);
 	};
 
+	template<class T>
+	shared_ptr<T> GetResource(char *resourceName)
+	{
+		return GetResource<T>(GetResourceID(resourceName));
+	};
+
 	// Preferred functions, built out of CreateResource() and GetResource()
 	template<class T>
 	shared_ptr<T> CreateAndGetResource()
@@ -100,3 +106,17 @@ public:
 	};
 	void RemoveResource(const char *resourceName) { return RemoveResource(GetResourceID(resourceName)); };
 };
+
+#pragma warning(disable:4505) // disable glut warnings
+
+// UTILITY FUNCTIONS (USED TO MAKE IT EASIER TO LOAD SPECIFIC TYPES OF RESOURCE)
+// NOTE THESE Load FUNCTIONS WILL RELOAD DATA EVEN IF IT EXISTS, TO AVOID THIS
+// CALL GetResource() OR PASS AROUND THE SHARED POINTER TO THE OBJECT
+#include "Texture.h"
+#include "Shader.h"
+#include "ShaderObject.h"
+#include "RenderTarget.h"
+
+TextureHandle LoadTexture(char *filename, char *textureResourceName=0); // if not provided, the default resource name used is the filename
+ShaderHandle LoadShader(char *vertexShaderFilename, char *fragmentShaderFilename, char *shaderResourceName=0); // if not provided, there is no default shader resource name
+RenderTargetHandle CreateRenderTarget(int width, int height, char *renderTargetResourceName=0); // if not provided, there is no default render target resource name

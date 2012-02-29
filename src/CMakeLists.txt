@@ -14,8 +14,8 @@ set(shading_headers Light.h color.h Camera.h RenderTarget.h GraphicsObject.h Mat
 set(shading_src GraphicsObject.cpp Material.cpp Mesh.cpp Shader.cpp ShaderObject.cpp Texture.cpp)
 
 # resource managers
-set(resource_management_headers RenderTarget.h ShaderManager.h ResourceManager.h Resource.h)
-set(resource_management_src ShaderManager.cpp ResourceManager.cpp)
+set(resource_management_headers RenderTarget.h ResourceManager.h Resource.h)
+set(resource_management_src ResourceManager.cpp)
 
 # utilities
 set(util_headers ctypes.h strutils.h util.h AppConfig.h EngineConfig.h Namable.h GameTime.h PerfTimer.h stb_image.h testobjects.h AntTweakBarFunctions.h)
