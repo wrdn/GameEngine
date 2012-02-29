@@ -40,10 +40,10 @@ public:
 	void SetParameteri(GLenum param, u32 v) const;
 	void SetParameterf(GLenum param, f32 v) const;
 
-	const u32 GetGLTextureID() const { return textureID; };
+	u32 GetGLTextureID() const { return textureID; };
 	void SetTextureSlot(OpenGLTextureSlot s) { glTexSlot = s; };
-	const OpenGLTextureSlot GetTextureSlot() const { return glTexSlot; };
-	const u32 GetTextureSlotIndex() const { return glTexSlot - SLOT_GL_TEXTURE_0; };
+	OpenGLTextureSlot GetTextureSlot() const { return glTexSlot; };
+	u32 GetTextureSlotIndex() const { return glTexSlot - SLOT_GL_TEXTURE_0; };
 };
 
-typedef std::shared_ptr<Texture> TextureHandle;
+typedef std::tr1::shared_ptr<Texture> TextureHandle;

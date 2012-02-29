@@ -1,7 +1,3 @@
-#ifdef _WIN32
-#pragma warning (disable : 4505) // used to disable warning from glut code, "unreferenced local function has been removed"
-#endif
-
 #include <GL/glew.h>
 
 #include "RenderTarget.h"
@@ -16,6 +12,10 @@
 #include <AntTweakBar.h>
 
 #include "OBJLoader.h"
+
+#ifdef _WIN32
+#pragma warning(disable:4505) // used to disable warning from glut code, "unreferenced local function has been removed"
+#endif
 
 GameTime gt;
 Camera c;
@@ -129,7 +129,9 @@ void setTextureMatrix(void)
 	glMatrixMode(GL_MODELVIEW);
 }
 
+#ifdef _WIN32
 #pragma warning (disable : 4702)
+#endif
 
 void vsm_shadow_mapping_render()
 {
@@ -311,7 +313,8 @@ void display()
 	//vsm_shadow_mapping_render();
 
 	//DrawFullScreenQuad(test_tex_handle->GetGLTextureID());
-
+	//glutSwapBuffers();
+	
 	glClearColor(0,0,0,1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -326,11 +329,12 @@ void display()
 
 	for(u32 i=0;i<graphicsObjects.size();++i)
 	{
-		graphicsObjects[i].Draw();
+		//graphicsObjects[i].Draw();
 	};
 
-	//test_sphere.SetPosition(float3(0,0,-30));
-	//test_sphere.Draw();
+	glDisable(GL_CULL_FACE);
+	test_sphere.SetPosition(float3(0,0,-30));
+	test_sphere.Draw();
 
 	glutSwapBuffers();
 
@@ -353,6 +357,8 @@ int numSizes = sizeof(shadowMapSizes) / sizeof(vec2i);
 
 void keyb(uc8 vkey, i32 x, i32 y)
 {
+	if(x||y){} // get rid of unused parameter warnings
+
 	switch(tolower(vkey))
 	{
 	case 27: glutLeaveMainLoop(); break; // escape key
@@ -412,11 +418,12 @@ void reshape (i32 width, i32 height)
 
 void mouseFunction(i32 mouseX, i32 mouseY)
 {
-	TwEventMouseMotionGLUT(mouseX, mouseY);
+        TwEventMouseMotionGLUT(mouseX, mouseY);
 	if(!mouseRotateCamera) return;
 
 	const i32 MX = glutGet(GLUT_WINDOW_WIDTH)/2;
 	const i32 MY = glutGet(GLUT_WINDOW_HEIGHT)/2;
+	
 	if(MX == mouseX && MY == mouseY) return;
 
 	const f32 rotationSpeedX = 10, rotationSpeedY = 15;
@@ -469,7 +476,7 @@ void setup_lights()
 	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 128.0f);
 };
 
-void LoadPCF(EngineConfig &conf)
+void LoadPCF()
 {
 	pcf_shadow_buffer = CreateRenderTarget(1024,1024);
 	pcf_shadow_buffer->SetDrawReadBufferState(GL_NONE, GL_NONE);
@@ -490,7 +497,7 @@ void LoadPCF(EngineConfig &conf)
 	}
 };
 
-void LoadVSM(EngineConfig &conf)
+void LoadVSM()
 {
 	// VSM shadow FBO
 	vsm_shadow_buffer = CreateRenderTarget(1024,1024, "vsm_shadow_buffer");
@@ -512,7 +519,7 @@ void LoadVSM(EngineConfig &conf)
 	}
 };
 
-void LoadBasicShadowMapping(EngineConfig &conf)
+void LoadBasicShadowMapping()
 {
 	basic_shadow_mapping_buffer = CreateRenderTarget(1024,1024,"basic_shadow_mapping_buffer");
 
@@ -537,6 +544,7 @@ void LoadCamera()
 
 	c.position.set(0,0,-10);
 	c.target.set(0,0,1);
+	c.speed = 20;
 	//c.speed = 10;
 	//c.position.set(-3,5,-8);
 	//c.target.set(0.25,-0.5,1);
@@ -553,7 +561,7 @@ void Load(EngineConfig &conf)
 	//TextureHandle tex2 = ResourceManager::get().CreateAndGetResource<Texture>("testjpeg");
 
 	bool objloaded = OBJLoader::LoadOBJFile("Data/sponza/sponza.obj",graphicsObjects);
-	if(objloaded){};
+	if(objloaded||&conf){};
 
 	test_tex_handle = LoadTexture("Data/test.jpg", "testjpeg");
 
@@ -572,9 +580,9 @@ void Load(EngineConfig &conf)
 	vsmShader = shaderMan.GetShader(vsmShaderID);
 	vsmShader->SetUniform("shadowMap", 7);*/
 
-	LoadBasicShadowMapping(conf);
-	LoadPCF(conf);
-	//LoadVSM(conf);
+	LoadBasicShadowMapping();
+	LoadPCF();
+	//LoadVSM();
 
 	activeBuffer = pcf_shadow_buffer;
 	//activeBuffer = basic_shadow_mapping_buffer;
@@ -600,11 +608,14 @@ int main(i32 argc, c8 **argv)
 	glutReshapeFunc(reshape);
 	glutKeyboardFunc(keyb);
 	glutPassiveMotionFunc(mouseFunction);
-	glutMotionFunc(OnMouseMotion);
-	glutMouseFunc(OnMouseButton);
+	//glutMotionFunc(OnMouseMotion);
+	//glutMouseFunc(mouseFunction);
+	
+	
+	//glutMouseFunc(OnMouseButton);
 	glutSpecialFunc(OnSpecialEvent);
 	//glutSetCursor(GLUT_CURSOR_NONE);
-
+	
 	setup_anttweakbar(mainBar);
 	TwGLUTModifiersFunc(glutGetModifiers);
 

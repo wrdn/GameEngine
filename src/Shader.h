@@ -22,7 +22,7 @@ private:
 	bool HasLinked();
 
 public:
-	Shader() : shaderProgramID(0), vs(0), fs(0) {};
+	Shader() : shaderProgramID(0), vs((VertexShaderObject*)0), fs((FragmentShaderObject*)0) {};
 	~Shader() { Unload(); };
 
 	//bool CreateProgram(VertexShaderObject* vs_handle, FragmentShaderObject* fs_handle);
@@ -35,7 +35,7 @@ public:
 	void Activate();
 	void Deactivate();
 
-	const GLint GetUniformLocation(const GLchar* name);
+	GLint GetUniformLocation(const GLchar* name);
 
 	void SetUniform(const c8 * const name, const GLint val);
 	void SetUniform(const c8 * const name, const Texture &tex);
@@ -49,4 +49,4 @@ public:
 	void PrintActiveUniforms(std::ostream &out);
 };
 
-typedef std::shared_ptr<Shader> ShaderHandle;
+typedef std::tr1::shared_ptr<Shader> ShaderHandle;

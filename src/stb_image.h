@@ -178,7 +178,9 @@ typedef unsigned char stbi_uc;
 extern "C" {
 #endif
 
+
 // CUSTOM CODE STARTS HERE
+#include <malloc.h>
 static void* (*alloc_function_pointer)(size_t sz) = malloc; // function should return NULL on invalid memory, otherwise a void pointer
 static void  (*free_function_pointer)(void *mem)  = free;
 
@@ -2881,7 +2883,7 @@ static int shiftsigned(int v, int shift, int bits)
 static stbi_uc *bmp_load(stbi *s, int *x, int *y, int *comp, int req_comp)
 {
    uint8 *out;
-   unsigned int mr=0,mg=0,mb=0,ma=0, fake_a=0;
+   unsigned int mr=0,mg=0,mb=0,ma=0, fake_a=0; if(fake_a){}
    stbi_uc pal[256][4];
    int psize=0,i,j,compress=0,width;
    int bpp, flip_vertically, pad, target, offset, hsz;

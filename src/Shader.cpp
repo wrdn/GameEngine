@@ -44,7 +44,7 @@ bool Shader::CreateProgram(VertexShaderHandle vs_handle, FragmentShaderHandle fs
 void Shader::Activate() { glUseProgram(shaderProgramID); };
 void Shader::Deactivate() { glUseProgram(0); };
 
-const GLint Shader::GetUniformLocation(const GLchar* name) // 0 on fail or -1
+GLint Shader::GetUniformLocation(const GLchar* name) // 0 on fail or -1
 {
 	return glGetUniformLocation(shaderProgramID, name);
 };

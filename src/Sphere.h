@@ -2,6 +2,7 @@
 
 #include "GraphicsObject.h"
 #include "ResourceManager.h"
+#include <cmath>
 
 class Sphere : public GraphicsObject
 {
@@ -27,7 +28,7 @@ public:
 		f32 stack_increment = 1.0f / (f32)stacks; // y
 		f32 slice_increment = PI*2.0f / (f32)slices; // x
 		f32 x,y,z;
-		u32 vertexCount=0; u32 indexCount=0;
+		u32 vertexCount=0; //u32 indexCount=0;
 		u32 arraySize = (slices+1)*(stacks-1)+2;
 		VERTEX *verts = new VERTEX[arraySize];
 
@@ -76,7 +77,7 @@ public:
 			++vertexCount;
 		} // end of body vertex generation
 
-		indexCount = 0;
+		//indexCount = 0;
 		vertexCount = 2;
 
 		// ********** INDEX GENERATION *********** //

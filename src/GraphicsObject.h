@@ -58,9 +58,9 @@ public:
 	// ORIENTATION
 	const float3 &GetOrientation() const { return orientation; };
 	void SetOrientation(const float3 &_orientation) { orientation = _orientation; };
-	const f32 GetXRotation() const { return orientation.x(); };
-	const f32 GetYRotation() const { return orientation.y(); };
-	const f32 GetZRotation() const { return orientation.z(); };
+	f32 GetXRotation() const { return orientation.x(); };
+	f32 GetYRotation() const { return orientation.y(); };
+	f32 GetZRotation() const { return orientation.z(); };
 	void SetXRotation(f32 rot) { orientation.x(rot); };
 	void SetYRotation(f32 rot) { orientation.y(rot); };
 	void SetZRotation(f32 rot) { orientation.z(rot); };

@@ -52,9 +52,9 @@ private:
 	static const char* LineTypeAsString(OBJLineType t);
 
 	// returns the line type, or IgnoredLine 0. if(ValidLineStart(s)) is true if result !=IgnoredLine
-	static const OBJLineType ValidateLineStart(const string &lineStart);
+	static OBJLineType ValidateLineStart(const string &lineStart);
 
-	static const OBJMaterialNodeType ValidateOBJMaterialLineStart(const string &str);
+	static OBJMaterialNodeType ValidateOBJMaterialLineStart(const string &str);
 
 	// any line that does not start with a string found here ignored
 	static const c8* ValidLineInitiators[];

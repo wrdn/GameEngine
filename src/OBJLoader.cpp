@@ -1,7 +1,9 @@
+#include <fstream>
+#include <sstream>
 #include "OBJLoader.h"
 #include "strutils.h"
-#include <sstream>
 #include "ResourceManager.h"
+using namespace std;
 
 const c8* OBJLoader::OBJMaterialValidLineInitiators[] =
 {
@@ -56,11 +58,13 @@ const c8* OBJLoader::LineTypeAsString(OBJLineType t)
 	case NormalLine: return "NormalLine";
 	case FaceLine: return "FaceLine";
 	case ObjectLine: return "ObjectLine";
+	case MTLLIBLine: return "MTLLIBLine";
+	case USEMTLLine: return "USEMTLLine";
 	}
 	return "";
 };
 
-const OBJLoader::OBJMaterialNodeType OBJLoader::ValidateOBJMaterialLineStart(const string &str)
+OBJLoader::OBJMaterialNodeType OBJLoader::ValidateOBJMaterialLineStart(const string &str)
 {
 	for(u32 i=0;i<sizeof(OBJMaterialValidLineInitiators)/sizeof(const c8*);++i)
 		if(str == OBJMaterialValidLineInitiators[i])
@@ -68,7 +72,7 @@ const OBJLoader::OBJMaterialNodeType OBJLoader::ValidateOBJMaterialLineStart(con
 	return IgnoredNode;
 };
 
-const OBJLoader::OBJLineType OBJLoader::ValidateLineStart(const string &lineStart)
+OBJLoader::OBJLineType OBJLoader::ValidateLineStart(const string &lineStart)
 {
 	for(u32 i=0;i< sizeof(ValidLineInitiators)/sizeof(const c8*); ++i)
 		if(lineStart == ValidLineInitiators[i])
@@ -78,7 +82,7 @@ const OBJLoader::OBJLineType OBJLoader::ValidateLineStart(const string &lineStar
 
 bool OBJLoader::ParseMaterialFile(const c8* mtl_filename, std::map<u32, OBJMaterial> &outputMap)
 {
-	ifstream mtlFile(mtl_filename);
+	ifstream mtlFile((const char*)mtl_filename);
 	if(mtlFile.fail()) return false;
 
 	u32 activeNode = 0;
@@ -95,6 +99,7 @@ bool OBJLoader::ParseMaterialFile(const c8* mtl_filename, std::map<u32, OBJMater
 
 		switch(matNode)
 		{
+		case IgnoredLine: break;
 		case Mat_NewMaterial:
 			{
 				string materialName; line >> materialName;
@@ -130,7 +135,8 @@ bool OBJLoader::ParseMaterialFile(const c8* mtl_filename, std::map<u32, OBJMater
 
 bool OBJLoader::LoadOBJFile(const string& filename, vector<GraphicsObject> &output_vec)
 {
-	ifstream fileStream(filename);
+	//ifstream fileStream(filename.c_str());
+	ifstream fileStream;
 	if(!fileStream.good()) { return false; } // no file
 
 	vector<float3> vertices, normals;
@@ -156,7 +162,11 @@ bool OBJLoader::LoadOBJFile(const string& filename, vector<GraphicsObject> &outp
 
 		switch(p) // by the time we get here, we know the line is valid
 		{
-
+		case IgnoredLine: break;
+		case USEMTLLine:
+		{
+		  // TODO: WRITE THIS
+		} break;
 		case MTLLIBLine:
 			{
 				// note: material files are specified relative to the OBJ file, so we need to build the
@@ -193,8 +203,6 @@ bool OBJLoader::LoadOBJFile(const string& filename, vector<GraphicsObject> &outp
 				float3 _normal; line >> _normal;
 				if(!line.fail()) { normals.push_back(_normal); }
 			} break;
-
-#pragma region Face Parsing
 		case FaceLine: // 3 face vertex definitions per line e.g. "1/2/3 4/5/6 7/8/9", v/vt/vn, v/vn, v/vt, v, only v/vt/vn and v/vn should be supported (don't want to recalculate normals)
 			{
 				// no vertices (we can't make a face)
@@ -238,8 +246,10 @@ bool OBJLoader::LoadOBJFile(const string& filename, vector<GraphicsObject> &outp
 							i32 vertexIndex=-1, uvIndex=-1, normalIndex=-1;
 							stringstream buff(vs[0]); buff >> vertexIndex; --vertexIndex;
 							if(vertexIndex < 0 || (u32)vertexIndex >= vertices.size()) { break; } // can't survive an invalid vertex index
-							buff = stringstream(vs[1]); buff >> uvIndex; --uvIndex;
-							buff = stringstream(vs[2]); buff >> normalIndex; --normalIndex;
+
+							stringstream buff_uv(vs[1]), buff_nm(vs[2]); // REQUIRED TO ALLOW COMPILATION UNDER G++ (WITH -std=c++00x)
+							buff_uv >> uvIndex; --uvIndex;
+							buff_nm >> normalIndex; --normalIndex;
 
 							float3 vert(vertices[vertexIndex]), normal; float2 uv;
 							if(normalIndex >= 0 && (u32)normalIndex < normals.size()) { normal = normals[normalIndex]; } // can survive invalid normal/uv indices
@@ -259,7 +269,9 @@ bool OBJLoader::LoadOBJFile(const string& filename, vector<GraphicsObject> &outp
 								i32 vertexIndex=-1, otherIndex=-1; // other index is vt or vn
 								stringstream buff(vs[0]); buff >> vertexIndex; --vertexIndex;
 								if(vertexIndex < 0 || (u32)vertexIndex >= vertices.size()) { break; } // can't survive an invalid vertex index
-								buff = stringstream(vs[1]); buff >> otherIndex; --otherIndex;
+								
+                                                                stringstream buff2(vs[1]);
+								buff2 >> otherIndex; --otherIndex;
 
 								float3 vert(vertices[vertexIndex]), normal; float2 uv;
 
@@ -277,8 +289,6 @@ bool OBJLoader::LoadOBJFile(const string& filename, vector<GraphicsObject> &outp
 					} // switch(NumberOfForwardSlashes)
 				} // for(u32 i=0;i<3;++i)
 			} break; // case FaceLine
-#pragma endregion
-
 		case ObjectLine: // "o" line, try and create a model using existing data then clear vertices,uvs,normals,faceVertices,indexSet and hashMap
 			{
 				if(faceVertices.size() && indexSet.size())

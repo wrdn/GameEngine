@@ -2,7 +2,13 @@
 
 #include <GL/glew.h>
 #include <GL/freeglut.h>
+
+#ifdef __linux__
+#include <GL/gl.h>
+#else
 #include <GL/GL.h>
+#endif
+
 #include <vector>
 #include "ctypes.h"
 #include "Resource.h"
@@ -176,4 +182,4 @@ public:
 	}
 };
 
-typedef std::shared_ptr<RenderTarget> RenderTargetHandle;
+typedef std::tr1::shared_ptr<RenderTarget> RenderTargetHandle;

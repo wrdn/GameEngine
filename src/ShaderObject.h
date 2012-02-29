@@ -46,6 +46,6 @@ public:
 };
 
 typedef ShaderObject VertexShaderObject;
-typedef std::shared_ptr<ShaderObject> GenericShaderHandle;
-typedef std::shared_ptr<VertexShaderObject> VertexShaderHandle;
-typedef std::shared_ptr<FragmentShaderObject> FragmentShaderHandle;
+typedef std::tr1::shared_ptr<ShaderObject> GenericShaderHandle;
+typedef std::tr1::shared_ptr<VertexShaderObject> VertexShaderHandle;
+typedef std::tr1::shared_ptr<FragmentShaderObject> FragmentShaderHandle;

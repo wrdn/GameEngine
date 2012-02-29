@@ -58,4 +58,4 @@ public:
 	void Draw() const;
 };
 
-typedef std::shared_ptr<Mesh> MeshHandle;
+typedef std::tr1::shared_ptr<Mesh> MeshHandle;

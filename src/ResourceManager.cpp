@@ -15,10 +15,10 @@ void ResourceManager::AddResource(i32 id, const char *name, Resource *r)
 {
 	r->SetResourceID(id);
 	r->SetName(name);
-	resourceMap[id] = shared_ptr<Resource>(r);
+	resourceMap[id] = std::tr1::shared_ptr<Resource>(r);
 };
 
-TextureHandle LoadTexture(char *filename, char *textureResourceName) // if not provided, the default resource name used is the filename
+TextureHandle LoadTexture(const char *filename, const char *textureResourceName) // if not provided, the default resource name used is the filename
 {
 	TextureHandle hnd = textureResourceName ? ResourceManager::get().CreateAndGetResource<Texture>(textureResourceName) : ResourceManager::get().CreateAndGetResource<Texture>(filename);
 	if(hnd->GetGLTextureID()) { return hnd; }; // return resource if already loaded
@@ -26,9 +26,9 @@ TextureHandle LoadTexture(char *filename, char *textureResourceName) // if not p
 	return hnd;
 };
 
-ShaderHandle LoadShader(char *vertexShaderFilename, char *fragmentShaderFilename, char *shaderResourceName) // if not provided, there is no default shader resource name
+ShaderHandle LoadShader(const char *vertexShaderFilename, const char *fragmentShaderFilename, const char *shaderResourceName) // if not provided, there is no default shader resource name
 {
-	if(!vertexShaderFilename || !fragmentShaderFilename) { return ShaderHandle(0); };
+	if(!vertexShaderFilename || !fragmentShaderFilename) { return ShaderHandle((Shader*)0); };
 
 	// Compile and check vertex shader
 	VertexShaderHandle vsh = ResourceManager::get().CreateAndGetResource<VertexShaderObject>(vertexShaderFilename); // ASSUME WE WANT TO RELOAD SHADER (COULD CHECK IF ID ALREADY VALID)
@@ -38,7 +38,7 @@ ShaderHandle LoadShader(char *vertexShaderFilename, char *fragmentShaderFilename
 		{
 			vsh->PrintShaderLog(std::cout);
 			ResourceManager::get().RemoveResource(vsh->GetResourceID());
-			return ShaderHandle(0);
+			return ShaderHandle((Shader*)0);
 		}
 	}
 	
@@ -51,7 +51,7 @@ ShaderHandle LoadShader(char *vertexShaderFilename, char *fragmentShaderFilename
 			fsh->PrintShaderLog(std::cout);
 			ResourceManager::get().RemoveResource(vsh->GetResourceID());
 			ResourceManager::get().RemoveResource(fsh->GetResourceID());
-			return ShaderHandle(0);
+			return ShaderHandle((Shader*)0);
 		}
 	}
 
@@ -72,13 +72,13 @@ ShaderHandle LoadShader(char *vertexShaderFilename, char *fragmentShaderFilename
 		ResourceManager::get().RemoveResource(vsh->GetResourceID());
 		ResourceManager::get().RemoveResource(fsh->GetResourceID());
 		ResourceManager::get().RemoveResource(sh->GetResourceID());
-		return ShaderHandle(0);
+		return ShaderHandle((Shader*)0);
 	}
 	
 	return sh;
 };
 
-RenderTargetHandle CreateRenderTarget(int width, int height, char *renderTargetResourceName)
+RenderTargetHandle CreateRenderTarget(int width, int height, const char *renderTargetResourceName)
 {
 	RenderTargetHandle rth = renderTargetResourceName ? ResourceManager::get().CreateAndGetResource<RenderTarget>(renderTargetResourceName)
 		: ResourceManager::get().CreateAndGetResource<RenderTarget>();

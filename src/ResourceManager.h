@@ -56,7 +56,7 @@ public:
 	};
 
 	template<class T>
-	i32 CreateResource(char *resourceName) // creates a new resource using hashed resourceName, or returns the ID of the resource if it already exists
+	i32 CreateResource(const char *resourceName) // creates a new resource using hashed resourceName, or returns the ID of the resource if it already exists
 	{
 		i32 resHash = GetResourceID(resourceName);
 		if(resourceMap.count(resHash)) { return resHash; };
@@ -66,30 +66,30 @@ public:
 	};
 
 	template<class T>
-	shared_ptr<T> GetResource(i32 id)
+	std::tr1::shared_ptr<T> GetResource(i32 id)
 	{
 		if(resourceMap.count(id))
 		{
-			return std::static_pointer_cast<T>(resourceMap[id]);
+			return std::tr1::static_pointer_cast<T>(resourceMap[id]);
 		}
-		return shared_ptr<T>(0);
+		return std::tr1::shared_ptr<T>((T*)0);
 	};
 
 	template<class T>
-	shared_ptr<T> GetResource(char *resourceName)
+	std::tr1::shared_ptr<T> GetResource(const char *resourceName)
 	{
 		return GetResource<T>(GetResourceID(resourceName));
 	};
 
 	// Preferred functions, built out of CreateResource() and GetResource()
 	template<class T>
-	shared_ptr<T> CreateAndGetResource()
+	std::tr1::shared_ptr<T> CreateAndGetResource()
 	{
 		return GetResource<T>(CreateResource<T>());
 	};
 	
 	template<class T>
-	shared_ptr<T> CreateAndGetResource(char *resourceName)
+	std::tr1::shared_ptr<T> CreateAndGetResource(const char *resourceName)
 	{
 		return GetResource<T>(CreateResource<T>(resourceName));
 	};
@@ -107,7 +107,9 @@ public:
 	void RemoveResource(const char *resourceName) { return RemoveResource(GetResourceID(resourceName)); };
 };
 
+#ifdef _WIN32
 #pragma warning(disable:4505) // disable glut warnings
+#endif
 
 // UTILITY FUNCTIONS (USED TO MAKE IT EASIER TO LOAD SPECIFIC TYPES OF RESOURCE)
 // NOTE THESE Load FUNCTIONS WILL RELOAD DATA EVEN IF IT EXISTS, TO AVOID THIS
@@ -117,6 +119,6 @@ public:
 #include "ShaderObject.h"
 #include "RenderTarget.h"
 
-TextureHandle LoadTexture(char *filename, char *textureResourceName=0); // if not provided, the default resource name used is the filename
-ShaderHandle LoadShader(char *vertexShaderFilename, char *fragmentShaderFilename, char *shaderResourceName=0); // if not provided, there is no default shader resource name
-RenderTargetHandle CreateRenderTarget(int width, int height, char *renderTargetResourceName=0); // if not provided, there is no default render target resource name
+TextureHandle LoadTexture(const char *filename, const char *textureResourceName=0); // if not provided, the default resource name used is the filename
+ShaderHandle LoadShader(const char *vertexShaderFilename, const char *fragmentShaderFilename, const char *shaderResourceName=0); // if not provided, there is no default shader resource name
+RenderTargetHandle CreateRenderTarget(int width, int height, const char *renderTargetResourceName=0); // if not provided, there is no default render target resource name

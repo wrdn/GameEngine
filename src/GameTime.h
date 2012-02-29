@@ -42,7 +42,7 @@ double GetDeltaTime()
 const int FPS_TARGET = 60;
 const int SKIP_TICKS = 1000 / FPS_TARGET;
 
-
+/*
 class GameTime
 {
 private:
@@ -66,8 +66,8 @@ public:
 
 	double GetDeltaTime() { return 1.0 / FPS_TARGET; };
 };
+*/
 
-/*
 class GameTime
 {
 private:
@@ -87,7 +87,8 @@ public:
 
 	void Init()
 	{
-		currentTime = (f32)GetTime();
+		//currentTime = (f32)GetTime();
+		currentTime = 0;
 		oldTime = currentTime;
 		deltaTime=0;
 
@@ -101,29 +102,5 @@ public:
 		glut_oldtime = timeSinceStart;
 		deltaTime = deltaTimev * 0.001f;
 		return deltaTime;
-
-
-		
-		static const f32 TargetTime = 1.0f/30.0f; // target=30fps
-
-		currentTime = (f32)GetTime();
-		deltaTime = currentTime - oldTime;
-
-		if(deltaTime > TargetTime)
-		{
-			//deltaTime = TargetTime;
-		}
-
-		oldTime = currentTime;
-		//return deltaTime;
-
-
-
-		lastTime = newTime;
-		newTime = std::clock();
-		//return (m_NewTime-m_LastTime)/(f32)CLOCKS_PER_SEC;
-		deltaTime = (newTime-lastTime)/(f32)CLOCKS_PER_SEC;
-		return deltaTime;
 	};
 };
-*/

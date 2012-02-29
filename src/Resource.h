@@ -5,6 +5,10 @@
 
 #include <memory>
 
+#ifdef __linux__
+#include <tr1/memory> // for std::tr1::shared_ptr
+#endif
+
 class Resource : public Namable
 {
 private:
@@ -22,4 +26,4 @@ public:
 	virtual void Unload()=0;
 };
 
-typedef std::shared_ptr<Resource> ResourceHandle;
+typedef std::tr1::shared_ptr<Resource> ResourceHandle;

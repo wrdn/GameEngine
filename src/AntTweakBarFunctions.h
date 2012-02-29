@@ -1,6 +1,8 @@
 #pragma once
 
+#ifdef _WIN32
 #pragma warning (disable : 4100) // not all functions below need clientData, this gets rid of warning "unreferenced formal parameter"
+#endif
 
 #include <AntTweakBar.h>
 #include "ctypes.h"
@@ -9,13 +11,15 @@
 
 f32 teapotRotationInterpolationFactor=0;
 bool automaticTeapotRotation=true;
+bool leftMouseHeld = false;
 
 void TW_CALL SetTeapotInterpolationFactor(const void *value, void *clientData)
 {
 	*(f32*)clientData = clamp( (*(f32*)value)/100.0f ,0.0f,1.0f); // clamp value/100 to 0 to 1 range
 }
 void TW_CALL GetTeapotInterpolationFactor(void *value, void *clientData)
-{ 
+{
+	if(clientData){}
 	*(f32 *)value = teapotRotationInterpolationFactor;
 }
 void setup_anttweakbar(TwBar *mainBar)

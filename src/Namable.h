@@ -5,7 +5,7 @@ class Namable
 private:
 	char *name;
 public:
-	Namable() : name("") {};
+	Namable() : name(0) {};
 	Namable(const char *c) : name((char*)c) {};
 	~Namable() {};
 
