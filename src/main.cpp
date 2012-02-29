@@ -2,8 +2,6 @@
 #pragma warning (disable : 4505) // used to disable warning from glut code, "unreferenced local function has been removed"
 #endif
 
-#include "C:\Program Files (x86)\Visual Leak Detector\include\vld.h"
-
 #include <GL/glew.h>
 
 #include "RenderTarget.h"
