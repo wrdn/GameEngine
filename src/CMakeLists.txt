@@ -10,8 +10,8 @@ set(math_headers float2.h float3.h float4.h Quaternion.h Mat44.h Quaternion.h fl
 set(math_src float2.cpp float3.cpp float4.cpp Mat44.cpp Quaternion.cpp)
 
 # geometry
-set(geom_headers GraphicsObject.h Mesh.h Sphere.h)
-set(geom_src GraphicsObject.cpp Mesh.cpp Sphere.cpp)
+set(geom_headers GraphicsObject.h Mesh.h Sphere.h OBJLoader.h)
+set(geom_src GraphicsObject.cpp Mesh.cpp Sphere.cpp OBJLoader.cpp)
 
 # shading
 set(shading_headers Light.h color.h Camera.h RenderTarget.h Material.h Shader.h ShaderObject.h Texture.h)

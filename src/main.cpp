@@ -15,6 +15,8 @@
 #include "AntTweakBarFunctions.h"
 #include <AntTweakBar.h>
 
+#include "OBJLoader.h"
+
 GameTime gt;
 Camera c;
 TwBar *mainBar;
@@ -56,6 +58,8 @@ f32 radius = 20;
 f32 anglet=0;
 
 Sphere test_sphere;
+
+vector<GraphicsObject> graphicsObjects;
 
 void DrawFullScreenQuad(u32 texID)
 {
@@ -311,8 +315,22 @@ void display()
 	glClearColor(0,0,0,1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	test_sphere.SetPosition(float3(0,0,-30));
-	test_sphere.Draw();
+	glLoadIdentity();
+	glMatrixMode(GL_PROJECTION); glLoadIdentity();
+	gluPerspective(45, (double)windowWidth/(double)windowHeight,NEAR_PLANE, FAR_PLANE);
+	glMatrixMode(GL_MODELVIEW); glLoadIdentity();
+	float3 ntarg = c.position + c.target.normalize(); ntarg.normalize();
+	gluLookAt(c.position.x(), c.position.y(), c.position.z(),
+		ntarg.x(), ntarg.y(), ntarg.z(),
+		c.up.x(), c.up.y(), c.up.z());
+
+	for(u32 i=0;i<graphicsObjects.size();++i)
+	{
+		graphicsObjects[i].Draw();
+	};
+
+	//test_sphere.SetPosition(float3(0,0,-30));
+	//test_sphere.Draw();
 
 	glutSwapBuffers();
 
@@ -534,7 +552,15 @@ void Load(EngineConfig &conf)
 	// returns the same data
 	//TextureHandle tex2 = ResourceManager::get().CreateAndGetResource<Texture>("testjpeg");
 
+	bool objloaded = OBJLoader::LoadOBJFile("Data/sponza/sponza.obj",graphicsObjects);
+	if(objloaded){};
+
 	test_tex_handle = LoadTexture("Data/test.jpg", "testjpeg");
+
+	for(u32 i=0;i<graphicsObjects.size();++i)
+	{
+		graphicsObjects[i].AddTexture(test_tex_handle);
+	};
 
 	test_sphere.Create(11.3f,10,10);
 	test_sphere.AddTexture(test_tex_handle);
