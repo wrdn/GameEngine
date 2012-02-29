@@ -543,8 +543,8 @@ void Load(EngineConfig &conf)
 	vsmShader->SetUniform("shadowMap", 7);*/
 
 	LoadBasicShadowMapping(conf);
-	LoadPCF(conf);
-	LoadVSM(conf);
+	//LoadPCF(conf);
+	//LoadVSM(conf);
 
 
 	//activeBuffer = pcf_shadow_buffer;

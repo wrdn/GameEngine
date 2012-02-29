@@ -33,18 +33,22 @@ public:
 		u32 id = AddShader();
 		Shader *sh = GetShader(id);
 
-		if(!sh->LoadShader(fragmentShaderFilename, vertexShaderFilename))
+		VertexShaderObject *vso = new VertexShaderObject();
+		FragmentShaderObject *fso = new FragmentShaderObject();
+
+		vso->CompileFromFile(vertexShaderFilename);
+		fso->CompileFromFile(fragmentShaderFilename);
+		
+		if( ! sh->CreateProgram(VertexShaderHandle(vso), FragmentShaderHandle(fso)))
 		{
 			std::cout << vertexShaderFilename << ", " << fragmentShaderFilename << std::endl;
-			sh->PrintShaderLog(GL_VERTEX_SHADER, std::cout);
-			sh->PrintShaderLog(GL_FRAGMENT_SHADER, std::cout);
+			vso->PrintShaderLog(std::cout);
+			fso->PrintShaderLog(std::cout);
 			sh->PrintProgramLog(std::cout);
-			
-			RemoveShader(id);
 
+			RemoveShader(id);
 			return false;
 		}
-
 		out_id = id;
 		return true;
 	};

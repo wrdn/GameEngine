@@ -2,312 +2,118 @@
 #include "strutils.h"
 #include <iostream>
 
-Shader::Shader() : isActive(true),
-	vertexShaderID(0), fragmentShaderID(0), shaderProgramID(0),
-	error(ERROR_OK)
-{
-};
+// used to save and restore the currently active shader
+#define PUSH_ACTIVE_SHADER(t) i32 t=0; glGetIntegerv(GL_CURRENT_PROGRAM, &t);
+#define POP_ACTIVE_SHADER(t) glUseProgram(t);
 
-Shader::~Shader()
+void Shader::Unload()
 {
-	try
+	vs.reset();
+	fs.reset();
+	if(shaderProgramID)
 	{
-		// TODO: Cleanup the OpenGL shader objects here
-		glUseProgram(0);
-		glDetachObjectARB(shaderProgramID, vertexShaderID);
-		glDetachObjectARB(shaderProgramID, fragmentShaderID);
-		glDeleteShader(vertexShaderID);
-		glDeleteShader(fragmentShaderID);
 		glDeleteProgram(shaderProgramID);
-
-		// invalidate shader IDs
-		vertexShaderID = fragmentShaderID = shaderProgramID = 0;
+		shaderProgramID = 0;
 	}
-	catch(...) { }
 };
 
-const u32 Shader::GetLastError() const
+bool Shader::HasLinked()
 {
-	return error;
-};
-
-void Shader::SetActive(bool active)
-{
-	isActive = active;
-};
-
-const bool Shader::IsActive() const
-{
-	return isActive;
-};
-
-const bool Shader::Init()
-{
-	// Delete old shaders if already created
-	if(vertexShaderID)
-	{
-		glDeleteShader(vertexShaderID);
-	}
-	if(fragmentShaderID)
-	{
-		glDeleteShader(fragmentShaderID);
-	}
-	
-	vertexShaderID = glCreateShaderObjectARB(GL_VERTEX_SHADER_ARB);
-	if(!vertexShaderID)
-	{
-		error = ERROR_INVALID_VS_ID;
-		return ERROR_FAIL;
-	}
-
-	fragmentShaderID = glCreateShaderObjectARB(GL_FRAGMENT_SHADER_ARB);
-	if(!fragmentShaderID)
-	{
-		if(vertexShaderID)
-			glDeleteShader(vertexShaderID);
-
-		error = ERROR_INVALID_FS_ID;
-		return ERROR_FAIL;
-	}
-
-	return ERROR_OK;
-};
-
-const bool Shader::LoadShader(const c8* fragment_shader_filename, const c8* vertex_shader_filename)
-{
-	if(!vertexShaderID || !fragmentShaderID)
-	{
-		if(!Init()) { return false; }
-	}
-
-	c8* frag_src = read_src_fast(fragment_shader_filename);
-	c8* vert_src = read_src_fast(vertex_shader_filename);
-
-	if(!CompileVertexShader(vert_src) || !CompileFragmentShader(frag_src))
-	{
-		delete [] frag_src;
-		delete [] vert_src;
-		return false;
-	}
-	delete [] frag_src;
-	delete [] vert_src;
-
-	return CreateProgram();
-};
-
-bool Shader::CompileVertexShader(const c8 * const src)
-{
-	// Error checking
-	if(!fragmentShaderID && !vertexShaderID)
-	{ error = ERROR_INVALID_VS_FS_ID; return ERROR_FAIL; }
-	else if(!fragmentShaderID)
-	{ error =  ERROR_INVALID_FS_ID; return ERROR_FAIL; }
-	else if(!vertexShaderID)
-	{ error = ERROR_INVALID_VS_ID; return ERROR_FAIL; }
-
-	GLint len = strlen(src);
-
-	glShaderSourceARB(vertexShaderID, 1, (const GLchar**)&src, &len);
-	glCompileShaderARB(vertexShaderID);
-
-	i32 shader_ok = 0;
-	glGetShaderiv(vertexShaderID, GL_COMPILE_STATUS, &shader_ok);
-	if(!shader_ok)
-	{
-		error = ERROR_VS_COMPILE_FAILED;
-		return ERROR_FAIL;
-	}
-
-	return ERROR_OK;
-};
-
-bool Shader::CompileFragmentShader(const c8 * const src)
-{
-	// Error checking
-	if(!fragmentShaderID && !vertexShaderID)
-	{ error = ERROR_INVALID_VS_FS_ID; return ERROR_FAIL; }
-	else if(!fragmentShaderID)
-	{ error =  ERROR_INVALID_FS_ID; return ERROR_FAIL; }
-	else if(!vertexShaderID)
-	{ error = ERROR_INVALID_VS_ID; return ERROR_FAIL; }
-
-	GLint len = strlen(src);
-	glShaderSourceARB(fragmentShaderID, 1, (const GLchar**)&src, &len);
-	glCompileShader(fragmentShaderID);
-
-	i32 shader_ok = 0;
-	glGetShaderiv(fragmentShaderID, GL_COMPILE_STATUS, &shader_ok);
-	if(!shader_ok)
-	{
-		error = ERROR_FS_COMPILE_FAILED;
-		return ERROR_FAIL;
-	}
-
-	return ERROR_OK;
-};
-
-bool Shader::CreateProgram()
-{
-	if(!fragmentShaderID && !vertexShaderID)
-	{ error = ERROR_INVALID_VS_FS_ID; return ERROR_FAIL; }
-	else if(!fragmentShaderID)
-	{ error =  ERROR_INVALID_FS_ID; return ERROR_FAIL; }
-	else if(!vertexShaderID)
-	{ error = ERROR_INVALID_VS_ID; return ERROR_FAIL; }
-
-	shaderProgramID = glCreateProgram();
-	if(!shaderProgramID) { error = ERROR_CREATE_PROGRAM_FAILED; return ERROR_FAIL; };
-
-	glAttachObjectARB(shaderProgramID, vertexShaderID);
-	glAttachObjectARB(shaderProgramID, fragmentShaderID);
-	glLinkProgramARB(shaderProgramID);
-
-	i32 link_status;
+	i32 link_status = 0;
 	glGetProgramiv(shaderProgramID, GL_LINK_STATUS, &link_status);
-	if(!link_status)
-	{
-		error = ERROR_LINK_FAILED;
-		return ERROR_FAIL;
-	}
-
-	return ERROR_OK;
+	return link_status == GL_TRUE;
 };
 
-const GLint Shader::GetUnformLocation(const GLchar* name)
+bool Shader::CreateProgram(VertexShaderHandle vs_handle, FragmentShaderHandle fs_handle)
 {
-	return glGetUniformLocationARB(shaderProgramID, name);
+	if(!vs_handle || !fs_handle || !vs_handle->Valid() || !fs_handle->Valid()) { return false; }
+
+	vs = vs_handle;
+	fs = fs_handle;
+
+	if(shaderProgramID) { glDeleteProgram(shaderProgramID); };
+	shaderProgramID = glCreateProgram();
+
+	glAttachShader(shaderProgramID, vs->GetShaderID());
+	glAttachShader(shaderProgramID, fs->GetShaderID());
+	glLinkProgram(shaderProgramID);
+
+	return HasLinked();
 };
 
-void Shader::SetUniform(const GLint _id, const GLint val)
+void Shader::Activate() { glUseProgram(shaderProgramID); };
+void Shader::Deactivate() { glUseProgram(0); };
+
+const GLint Shader::GetUniformLocation(const GLchar* name) // 0 on fail or -1
 {
-	i32 cp=0;
-	glGetIntegerv(GL_CURRENT_PROGRAM, &cp); // get current shader (activated again after setting uniform)
-
-	Activate();
-	glUniform1i(_id, val);
-	
-	glUseProgram(cp);
-};
-
-
-void Shader::SetUniform(const c8 * const name, const Texture &tex)
-{
-	SetUniform(GetUnformLocation(name), tex.GetTextureSlotIndex());
-};
-
-void Shader::SetUniform(const c8 * const name, const f32 val)
-{
-	i32 cp=0;
-	glGetIntegerv(GL_CURRENT_PROGRAM, &cp); // get current shader (activated again after setting uniform)
-
-	Activate();
-	GLint _id = GetUnformLocation(name);
-	glUniform1f(_id, val);
-	
-	glUseProgram(cp);
+	return glGetUniformLocation(shaderProgramID, name);
 };
 
 void Shader::SetUniform(const c8 * const name, const GLint val)
 {
-	i32 cp=0;
-	glGetIntegerv(GL_CURRENT_PROGRAM, &cp); // get current shader (activated again after setting uniform)
-
+	PUSH_ACTIVE_SHADER(t);
 	Activate();
-	GLint _id = GetUnformLocation(name);
-	glUniform1i(_id, val);
-	
-	glUseProgram(cp);
+	glUniform1i(GetUniformLocation(name), val);
+	POP_ACTIVE_SHADER(t);
+};
+
+void Shader::SetUniform(const c8 * const name, const Texture &tex)
+{
+	SetUniform(name, (GLint)tex.GetTextureSlotIndex());
+};
+
+void Shader::SetUniform(const c8 * const name, const f32 val)
+{
+	PUSH_ACTIVE_SHADER(t);
+	Activate();
+	glUniform1f(GetUniformLocation(name), val);
+	POP_ACTIVE_SHADER(t);
 };
 
 void Shader::SetUniform(const c8 * const name, const float2 &val)
 {
-	i32 cp=0;
-	glGetIntegerv(GL_CURRENT_PROGRAM, &cp); // get current shader (activated again after setting uniform)
-
+	PUSH_ACTIVE_SHADER(t);
 	Activate();
-	GLint _id = GetUnformLocation(name);
-	glUniform2fv(_id, 1, val.GetVec());
-	
-	glUseProgram(cp);
+	glUniform2fv(GetUniformLocation(name),1, val.GetVec());
+	POP_ACTIVE_SHADER(t);
 };
 
 void Shader::SetUniform(const c8 * const name, const float3 &val)
 {
-	i32 cp=0;
-	glGetIntegerv(GL_CURRENT_PROGRAM, &cp); // get current shader (activated again after setting uniform)
-
+	PUSH_ACTIVE_SHADER(t);
 	Activate();
-	GLint _id = GetUnformLocation(name);
-	glUniform3fv(_id, 1, val.GetVec());
-	
-	glUseProgram(cp);
+	glUniform3fv(GetUniformLocation(name),1, val.GetVec());
+	POP_ACTIVE_SHADER(t);
 };
 
 void Shader::SetUniform(const c8 * const name, const float4 &val)
 {
-	i32 cp=0;
-	glGetIntegerv(GL_CURRENT_PROGRAM, &cp); // get current shader (activated again after setting uniform)
-
+	PUSH_ACTIVE_SHADER(t);
 	Activate();
-	GLint _id = GetUnformLocation(name);
-	glUniform4fv(_id, 1, val.GetVec());
-	
-	glUseProgram(cp);
+	glUniform4fv(GetUniformLocation(name),1, val.GetVec());
+	POP_ACTIVE_SHADER(t);
 };
 
 void Shader::SetUniform(const c8 * const name, const Mat44 &val)
 {
-	i32 cp=0;
-	glGetIntegerv(GL_CURRENT_PROGRAM, &cp); // get current shader (activated again after setting uniform)
-
+	PUSH_ACTIVE_SHADER(t);
 	Activate();
-	GLint _id = GetUnformLocation(name);
-	glUniformMatrix4fv(_id, 1, GL_FALSE, val.GetMatrix());
-
-	glUseProgram(cp);
-};
-
-void Shader::Activate()
-{
-	glUseProgram(shaderProgramID);
-};
-
-void Shader::Deactivate()
-{
-	glUseProgram(0);
-};
-
-void Shader::PrintShaderLog(GLenum shaderType, std::ostream &out)
-{
-	u32 shaderID=0;
-	if(shaderType == GL_VERTEX_SHADER)
-		shaderID = vertexShaderID;
-	else if(shaderType == GL_FRAGMENT_SHADER)
-		shaderID = fragmentShaderID;
-	else return;
-
-	i32 logLength;
-	glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &logLength);
-	c8* _log = new c8[logLength];
-	glGetShaderInfoLog(shaderID, logLength, NULL, _log);
-	out << _log << std::endl;
-	delete [] _log;
+	glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, val.GetMatrix());
+	POP_ACTIVE_SHADER(t);
 };
 
 void Shader::PrintProgramLog(std::ostream &out)
 {
-	GLint logLen=0;
-	glGetProgramiv(shaderProgramID, GL_INFO_LOG_LENGTH, &logLen);
-	c8 *log = new c8[logLen];
-	glGetProgramInfoLog(shaderProgramID, logLen, NULL, log);
+	const int LOG_SZ = 4096;
+	char log[LOG_SZ];
+	glGetProgramInfoLog(shaderProgramID, LOG_SZ, NULL, log);
 	out << log << std::endl;
-	delete [] log;
 };
 
 void Shader::PrintActiveUniforms(std::ostream &out)
 {
 	i32 total = -1;
-	glGetProgramiv( shaderProgramID, GL_ACTIVE_UNIFORMS, &total );
+	glGetProgramiv(shaderProgramID, GL_ACTIVE_UNIFORMS, &total);
 	if(total == 0) return;
 
 	for(i32 i=0; i<total; ++i)  {
@@ -320,9 +126,4 @@ void Shader::PrintActiveUniforms(std::ostream &out)
 		out << name << ", ";
 	};
 	out << std::endl;
-};
-
-const bool Shader::Valid() const
-{
-	return (vertexShaderID && fragmentShaderID && shaderProgramID);
 };
