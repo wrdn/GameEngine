@@ -5,6 +5,7 @@
 #include <GL/GL.h>
 #include <vector>
 #include "ctypes.h"
+#include "Resource.h"
 using namespace std;
 
 struct FBOTexture
@@ -18,7 +19,7 @@ public:
 	GLenum attachPoint;
 };
 
-class RenderTarget
+class RenderTarget : public Resource
 {
 private:
 	GLuint fbo_id; // frame buffer object id
@@ -26,6 +27,25 @@ private:
 
 	vector<FBOTexture> textures;
 public:
+	
+	void Unload()
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glBindTexture(GL_TEXTURE_2D,0);
+
+		for(u32 i=0;i<textures.size();++i)
+		{
+			glDeleteTextures(1, &textures[i].texID);
+		}
+		textures.clear();
+
+		if(fbo_id)
+		{
+			glDeleteFramebuffers(1, &fbo_id);
+			fbo_id = 0;
+		}
+	};
+
 	RenderTarget()
 	{
 		width = 800;
@@ -38,6 +58,10 @@ public:
 		width = pwidth;
 		height = pheight;
 		glGenFramebuffers(1, &fbo_id);
+	};
+	~RenderTarget()
+	{
+		Unload();
 	};
 
 	unsigned int GetWidth() const { return width; }
@@ -151,3 +175,5 @@ public:
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 };
+
+typedef std::shared_ptr<RenderTarget> RenderTargetHandle;

@@ -23,10 +23,10 @@ TwBar *mainBar;
 bool mouseRotateCamera = true; // set to false to disable mouse tracking (allowing mouse to be placed anywhere in window)
 Quaternion originTeapotRotation, finalTeapotRotation;
 
-RenderTarget *basic_shadow_mapping_buffer; // http://fabiensanglard.net/shadowmapping/index.php
-RenderTarget *pcf_shadow_buffer; // http://fabiensanglard.net/shadowmappingPCF/index.php
-RenderTarget *vsm_shadow_buffer, *vsm_blur_buffer; // http://fabiensanglard.net/shadowmappingVSM/index.php
-RenderTarget *activeBuffer;
+RenderTargetHandle basic_shadow_mapping_buffer; // http://fabiensanglard.net/shadowmapping/index.php
+RenderTargetHandle pcf_shadow_buffer; // http://fabiensanglard.net/shadowmappingPCF/index.php
+RenderTargetHandle vsm_shadow_buffer, vsm_blur_buffer; // http://fabiensanglard.net/shadowmappingVSM/index.php
+RenderTargetHandle activeBuffer;
 
 // BASIC SHADOW MAPPING
 u32 shadowMappingShaderID; Shader *shadowMappingShader;
@@ -302,11 +302,11 @@ void display()
 {
 	gt.Update();
 	
-	//basic_shadow_mapping_render();
+	basic_shadow_mapping_render();
 	//pcf_shadow_mapping_render();
 	//vsm_shadow_mapping_render();
 
-	DrawFullScreenQuad(test_tex_handle->GetGLTextureID());
+	//DrawFullScreenQuad(test_tex_handle->GetGLTextureID());
 
 	glutSwapBuffers();
 
@@ -447,7 +447,9 @@ void setup_lights()
 
 void LoadPCF(EngineConfig &conf)
 {
-	pcf_shadow_buffer = new RenderTarget(1024,1024);
+	//pcf_shadow_buffer = new RenderTarget(1024,1024);
+	pcf_shadow_buffer = ResourceManager::get().CreateAndGetResource<RenderTarget>();
+	pcf_shadow_buffer->SetWidthAndHeight(1024,1024);
 	pcf_shadow_buffer->SetDrawReadBufferState(GL_NONE, GL_NONE);
 	pcfDepthTex = pcf_shadow_buffer->CreateAndAttachTexture(
 		GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE,
@@ -470,14 +472,16 @@ void LoadPCF(EngineConfig &conf)
 void LoadVSM(EngineConfig &conf)
 {
 	// VSM shadow FBO
-	vsm_shadow_buffer = new RenderTarget(1024,1024);
+	vsm_shadow_buffer = ResourceManager::get().CreateAndGetResource<RenderTarget>();
+	vsm_shadow_buffer->SetWidthAndHeight(1024,1024);
 	vsmDepthTex = vsm_shadow_buffer->CreateAndAttachTexture(GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE,
 		GL_DEPTH_ATTACHMENT, false, GL_NEAREST, GL_NEAREST, GL_CLAMP, GL_CLAMP);
 	vsmColorTex = vsm_shadow_buffer->CreateAndAttachTexture(GL_RGB32F, GL_RGB, GL_FLOAT, GL_COLOR_ATTACHMENT0, true,
 		GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR_MIPMAP_LINEAR, GL_CLAMP, GL_CLAMP);
 
 	// Blur FBO
-	vsm_blur_buffer = new RenderTarget(1024,1024);
+	vsm_blur_buffer = ResourceManager::get().CreateAndGetResource<RenderTarget>();
+	vsm_blur_buffer->SetWidthAndHeight(1024,1024);
 	vsmBlurColorTex = vsm_blur_buffer->CreateAndAttachTexture(GL_RGB32F, GL_RGB, GL_FLOAT, GL_COLOR_ATTACHMENT0, false,
 		GL_LINEAR, GL_LINEAR, GL_CLAMP, GL_CLAMP);
 
@@ -495,7 +499,9 @@ void LoadVSM(EngineConfig &conf)
 
 void LoadBasicShadowMapping(EngineConfig &conf)
 {
-	basic_shadow_mapping_buffer = new RenderTarget(1024,1024);
+	basic_shadow_mapping_buffer = ResourceManager::get().CreateAndGetResource<RenderTarget>();
+	basic_shadow_mapping_buffer->SetWidthAndHeight(1024,1024);
+
 	basic_shadow_mapping_buffer->SetDrawReadBufferState(GL_NONE, GL_NONE);
 	depthTex = basic_shadow_mapping_buffer->CreateAndAttachTexture(
 		GL_DEPTH_COMPONENT,
@@ -525,8 +531,11 @@ void Load(EngineConfig &conf)
 	originTeapotRotation = Quaternion(float3(0,1,0), DEGTORAD(0));
 	finalTeapotRotation = Quaternion(float3(0,1,0), DEGTORAD(190));
 
-	test_tex_handle = ResourceManager::get().CreateAndGetResource<Texture>();
+	test_tex_handle = ResourceManager::get().CreateAndGetResource<Texture>("testjpeg");
 	test_tex_handle->Load("Data/test.jpg");
+
+	// returns the same data
+	TextureHandle tex2 = ResourceManager::get().CreateAndGetResource<Texture>("testjpeg");
 
 	/*shaderMan.LoadShader(vsmDepthWriteShaderID, "Data/Shaders/WriteDepth.vert", "Data/Shaders/WriteDepth.frag");
 	vsmDepthWriterShader = shaderMan.GetShader(vsmDepthWriteShaderID);
@@ -536,13 +545,13 @@ void Load(EngineConfig &conf)
 	vsmShader->SetUniform("shadowMap", 7);*/
 
 	LoadBasicShadowMapping(conf);
-	//LoadPCF(conf);
-	//LoadVSM(conf);
+	LoadPCF(conf);
+	LoadVSM(conf);
 
 
 	//activeBuffer = pcf_shadow_buffer;
-	//activeBuffer = basic_shadow_mapping_buffer;
-	activeBuffer = vsm_shadow_buffer;
+	activeBuffer = basic_shadow_mapping_buffer;
+	//activeBuffer = vsm_shadow_buffer;
 
 	LoadCamera();
 	gt.Update();
