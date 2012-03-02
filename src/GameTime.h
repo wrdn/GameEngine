@@ -42,32 +42,6 @@ double GetDeltaTime()
 const int FPS_TARGET = 60;
 const int SKIP_TICKS = 1000 / FPS_TARGET;
 
-/*
-class GameTime
-{
-private:
-	int old_time;
-	double dt;
-	int sleep_time;
-	DWORD nextTick;
-
-public:
-	GameTime() : old_time(0), dt(0), sleep_time(0),
-		nextTick(GetTickCount()) {};
-	~GameTime() {};
-
-	double Update()
-	{
-		nextTick += SKIP_TICKS;
-		sleep_time = nextTick - GetTickCount();
-		if(sleep_time >= 0) { Sleep(sleep_time); }
-		return 1.0 / FPS_TARGET;
-	};
-
-	double GetDeltaTime() { return 1.0 / FPS_TARGET; };
-};
-*/
-
 class GameTime
 {
 private:
@@ -91,16 +65,20 @@ public:
 		currentTime = 0;
 		oldTime = currentTime;
 		deltaTime=0;
-
 		glut_oldtime = 0;
 	};
 
 	f32 Update() // updates time and returns dt
 	{
+#ifdef _WIN32
+		deltaTime = 1.0f/FPS_TARGET;
+		return deltaTime;
+#else
 		int timeSinceStart = glutGet(GLUT_ELAPSED_TIME);
 		int deltaTimev = timeSinceStart - glut_oldtime;
 		glut_oldtime = timeSinceStart;
 		deltaTime = deltaTimev * 0.001f;
 		return deltaTime;
+#endif
 	};
 };

@@ -106,27 +106,27 @@ void setTextureMatrix(void)
 {
 	static double modelView[16];
 	static double projection[16];
-	
+
 	const GLdouble bias[16] = {	
 		0.5, 0.0, 0.0, 0.0, 
 		0.0, 0.5, 0.0, 0.0,
 		0.0, 0.0, 0.5, 0.0,
-	0.5, 0.5, 0.5, 1.0};
-	
-	glGetDoublev(GL_MODELVIEW_MATRIX, modelView);
-	glGetDoublev(GL_PROJECTION_MATRIX, projection);
-	
-	
-	glMatrixMode(GL_TEXTURE);
-	glActiveTextureARB(GL_TEXTURE7);
-	
-	glLoadIdentity();	
-	glLoadMatrixd(bias);
-	
-	glMultMatrixd (projection);
-	glMultMatrixd (modelView);
-	
-	glMatrixMode(GL_MODELVIEW);
+		0.5, 0.5, 0.5, 1.0};
+
+		glGetDoublev(GL_MODELVIEW_MATRIX, modelView);
+		glGetDoublev(GL_PROJECTION_MATRIX, projection);
+
+
+		glMatrixMode(GL_TEXTURE);
+		glActiveTextureARB(GL_TEXTURE7);
+
+		glLoadIdentity();	
+		glLoadMatrixd(bias);
+
+		glMultMatrixd (projection);
+		glMultMatrixd (modelView);
+
+		glMatrixMode(GL_MODELVIEW);
 }
 
 #ifdef _WIN32
@@ -182,7 +182,7 @@ void vsm_shadow_mapping_render()
 	gluLookAt(c.position.x(), c.position.y(), c.position.z(),
 		ntarg.x(), ntarg.y(), ntarg.z(),
 		c.up.x(), c.up.y(), c.up.z());
-	
+
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 	glColor3f(1,0,0); draw_floor_plane();
@@ -213,7 +213,7 @@ void pcf_shadow_mapping_render()
 
 	setTextureMatrix();
 	RenderTarget::Unbind();
-	
+
 	glViewport(0,0,windowWidth,windowHeight); // RENDERING TO WINDOW
 	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE); // RENABLE COLORING
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -231,7 +231,7 @@ void pcf_shadow_mapping_render()
 	glBindTexture(GL_TEXTURE_2D,pcfDepthTex.texID);
 
 	pcfShadowMappingShader->Activate();
-	
+
 	glLoadIdentity();
 	glMatrixMode(GL_PROJECTION); glLoadIdentity();
 	gluPerspective(45, (double)windowWidth/(double)windowHeight,NEAR_PLANE, FAR_PLANE);
@@ -275,7 +275,7 @@ void basic_shadow_mapping_render()
 	glViewport(0,0,windowWidth,windowHeight); // RENDERING TO WINDOW
 	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE); // RENABLE COLORING
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
+
 	//glDisable(GL_DEPTH_TEST);
 	//DrawFullScreenQuad(depthTex.texID);
 	//return;
@@ -307,14 +307,15 @@ void basic_shadow_mapping_render()
 void display()
 {
 	gt.Update();
-	
+
 	//basic_shadow_mapping_render();
 	//pcf_shadow_mapping_render();
 	//vsm_shadow_mapping_render();
 
 	//DrawFullScreenQuad(test_tex_handle->GetGLTextureID());
 	//glutSwapBuffers();
-	
+	//return;
+
 	glClearColor(0,0,0,1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -327,13 +328,19 @@ void display()
 		ntarg.x(), ntarg.y(), ntarg.z(),
 		c.up.x(), c.up.y(), c.up.z());
 
-	for(u32 i=0;i<graphicsObjects.size();++i)
-	{
-		//graphicsObjects[i].Draw();
-	};
+	//for(u32 i=0;i<graphicsObjects.size();++i)
+	//{
+	//	graphicsObjects[i].Draw();
+	//};
 
+	
+	//test_sphere.SetPolygonFillMode(GL_POINT);
+	
+	test_sphere.SetUsingTextures(false);
 	glDisable(GL_CULL_FACE);
-	test_sphere.SetPosition(float3(0,0,-30));
+	test_sphere.SetPosition(float3(0,0,15));
+	test_sphere.SetPolygonFillMode(GL_LINE);
+
 	test_sphere.Draw();
 
 	glutSwapBuffers();
@@ -371,7 +378,7 @@ void keyb(uc8 vkey, i32 x, i32 y)
 	case 'd': c.position += c.target.cross(c.up) * c.speed * (f32)gt.GetDeltaTime(); break;
 	case 'q': c.position += c.up * c.speed * (f32)gt.GetDeltaTime(); break;
 	case 'e': c.position -= c.up * c.speed * (f32)gt.GetDeltaTime(); break;
-	
+
 	case 'n':
 		{
 			++currentshadowmapsizeindex;
@@ -379,7 +386,7 @@ void keyb(uc8 vkey, i32 x, i32 y)
 			{
 				currentshadowmapsizeindex = 0;
 			}
-			
+
 			activeBuffer->SetWidthAndHeight(shadowMapSizes[currentshadowmapsizeindex].x, shadowMapSizes[currentshadowmapsizeindex].y);
 			cout << "Shadow map size: " << shadowMapSizes[currentshadowmapsizeindex].x << " " << shadowMapSizes[currentshadowmapsizeindex].y << endl;
 			break;
@@ -418,12 +425,12 @@ void reshape (i32 width, i32 height)
 
 void mouseFunction(i32 mouseX, i32 mouseY)
 {
-        TwEventMouseMotionGLUT(mouseX, mouseY);
+	TwEventMouseMotionGLUT(mouseX, mouseY);
 	if(!mouseRotateCamera) return;
 
 	const i32 MX = glutGet(GLUT_WINDOW_WIDTH)/2;
 	const i32 MY = glutGet(GLUT_WINDOW_HEIGHT)/2;
-	
+
 	if(MX == mouseX && MY == mouseY) return;
 
 	const f32 rotationSpeedX = 10, rotationSpeedY = 15;
@@ -570,12 +577,12 @@ void Load(EngineConfig &conf)
 		graphicsObjects[i].AddTexture(test_tex_handle);
 	};
 
-	test_sphere.Create(11.3f,10,10);
+	test_sphere.Create(11.3f,20,20);
 	test_sphere.AddTexture(test_tex_handle);
 
 	/*shaderMan.LoadShader(vsmDepthWriteShaderID, "Data/Shaders/WriteDepth.vert", "Data/Shaders/WriteDepth.frag");
 	vsmDepthWriterShader = shaderMan.GetShader(vsmDepthWriteShaderID);
-	
+
 	shaderMan.LoadShader(vsmShaderID, "Data/Shaders/VSM.vert", "Data/Shaders/VSM.frag");
 	vsmShader = shaderMan.GetShader(vsmShaderID);
 	vsmShader->SetUniform("shadowMap", 7);*/
@@ -607,15 +614,16 @@ int main(i32 argc, c8 **argv)
 	glutIdleFunc(idle);
 	glutReshapeFunc(reshape);
 	glutKeyboardFunc(keyb);
+
 	glutPassiveMotionFunc(mouseFunction);
-	//glutMotionFunc(OnMouseMotion);
+	glutMotionFunc(OnMouseMotion);
 	//glutMouseFunc(mouseFunction);
-	
-	
+
+
 	//glutMouseFunc(OnMouseButton);
 	glutSpecialFunc(OnSpecialEvent);
 	//glutSetCursor(GLUT_CURSOR_NONE);
-	
+
 	setup_anttweakbar(mainBar);
 	TwGLUTModifiersFunc(glutGetModifiers);
 
