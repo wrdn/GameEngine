@@ -10,7 +10,6 @@ d 0.000000
 illum 2
 map_Kd sponza_textures\lion.jpg
 map_Bump sponza_textures\lion_ddn.jpg
-map_Ka sponza_textures\lion.jpg
 
 newmtl Material__298_background.tga
 Ns 7.843137
@@ -22,7 +21,6 @@ d 0.000000
 illum 2
 map_Kd sponza_textures\background.jpg
 map_Bump sponza_textures\background_ddn.jpg
-map_Ka sponza_textures\background.jpg
 
 newmtl Material__47
 Ns 7.843137
@@ -43,7 +41,7 @@ d 0.000000
 illum 2
 map_Kd sponza_textures\vase_plant.jpg
 map_d sponza_textures\vase_plant_mask.jpg
-map_Ka sponza_textures\vase_plant.jpg
+map_Ks sponza_textures\vase_plant_spec.jpg
 
 newmtl arch_sponza_arch_diff.tga
 Ns 7.843137
@@ -54,7 +52,8 @@ Ni 1.000000
 d 0.000000
 illum 2
 map_Kd sponza_textures\sponza_arch_diff.jpg
-map_Ka sponza_textures\sponza_arch_diff.jpg
+map_Ks sponza_textures\sponza_arch_spec.jpg
+map_Bump sponza_textures\sponza_arch_ddn.jpg
 
 newmtl bricks_spnza_bricks_a_diff.t
 Ns 7.843137
@@ -65,8 +64,8 @@ Ni 1.000000
 d 0.000000
 illum 2
 map_Kd sponza_textures\spnza_bricks_a_diff.jpg
-map_Bump sponza_textures\spnza_bricks_a_diff.jpg
-map_Ka sponza_textures\spnza_bricks_a_diff.jpg
+map_Bump sponza_textures\spnza_bricks_a_ddn.jpg
+map_Ks sponza_textures\spnza_bricks_a_spec.jpg
 
 newmtl ceiling_sponza_ceiling_a_diff
 Ns 7.843137
@@ -77,7 +76,8 @@ Ni 1.000000
 d 0.000000
 illum 2
 map_Kd sponza_textures\sponza_ceiling_a_diff.jpg
-map_Ka sponza_textures\sponza_ceiling_a_diff.jpg
+map_Bump sponza_textures\sponza_ceiling_a_ddn.jpg
+map_Ks sponza_textures\sponza_ceiling_a_spec.jpg
 
 newmtl chain_chain_texture.tga
 Ns 7.843137
@@ -90,7 +90,6 @@ illum 2
 map_Kd sponza_textures\chain_texture.jpg
 map_d sponza_textures\chain_texture_mask.jpg
 map_Bump sponza_textures\chain_texture_ddn.jpg
-map_Ka sponza_textures\chain_texture.jpg
 
 newmtl column_a_sponza_column_a_diff.
 Ns 7.843137
@@ -102,7 +101,7 @@ d 0.000000
 illum 2
 map_Kd sponza_textures\sponza_column_a_diff.jpg
 map_Bump sponza_textures\sponza_column_a_ddn.jpg
-map_Ka sponza_textures\sponza_column_a_diff.jpg
+map_Ks sponza_textures\sponza_column_a_spec.jpg
 
 newmtl column_b_sponza_column_b_diff.
 Ns 7.843137
@@ -114,7 +113,7 @@ d 0.000000
 illum 2
 map_Kd sponza_textures\sponza_column_b_diff.jpg
 map_Bump sponza_textures\sponza_column_b_ddn.jpg
-map_Ka sponza_textures\sponza_column_b_diff.jpg
+map_Ks sponza_textures\sponza_column_b_spec.jpg
 
 newmtl column_c_sponza_column_c_diff.
 Ns 7.843137
@@ -126,7 +125,7 @@ d 0.000000
 illum 2
 map_Kd sponza_textures\sponza_column_c_diff.jpg
 map_Bump sponza_textures\sponza_column_c_ddn.jpg
-map_Ka sponza_textures\sponza_column_c_diff.jpg
+map_Ks sponza_textures\sponza_column_c_spec.jpg
 
 newmtl details_sponza_details_diff.t
 Ns 7.843137
@@ -137,7 +136,8 @@ Ni 1.000000
 d 0.000000
 illum 2
 map_Kd sponza_textures\sponza_details_diff.jpg
-map_Ka sponza_textures\sponza_details_diff.jpg
+map_Bump sponza_textures\sponza_details_ddn.jpg
+map_Ks sponza_textures\sponza_details_spec.jpg
 
 newmtl fabric_a_sponza_fabric_diff.tg
 Ns 7.843137
@@ -148,7 +148,7 @@ Ni 1.000000
 d 0.000000
 illum 2
 map_Kd sponza_textures\sponza_fabric_diff.jpg
-map_Ka sponza_textures\sponza_fabric_diff.jpg
+map_Ks sponza_textures\sponza_fabric_spec.jpg
 
 newmtl fabric_c_sponza_curtain_diff.t
 Ns 7.843137
@@ -159,7 +159,6 @@ Ni 1.000000
 d 0.000000
 illum 2
 map_Kd sponza_textures\sponza_curtain_diff.jpg
-map_Ka sponza_textures\sponza_curtain_diff.jpg
 
 newmtl fabric_d_sponza_fabric_blue_di
 Ns 7.843137
@@ -170,7 +169,7 @@ Ni 1.000000
 d 0.000000
 illum 2
 map_Kd sponza_textures\sponza_fabric_blue_diff.jpg
-map_Ka sponza_textures\sponza_fabric_blue_diff.jpg
+map_Ks sponza_textures\sponza_fabric_spec.jpg
 
 newmtl fabric_e_sponza_fabric_green_d
 Ns 7.843137
@@ -181,7 +180,7 @@ Ni 1.000000
 d 0.000000
 illum 2
 map_Kd sponza_textures\sponza_fabric_green_diff.jpg
-map_Ka sponza_textures\sponza_fabric_green_diff.jpg
+map_Ks sponza_textures\sponza_fabric_spec.jpg
 
 newmtl fabric_f_sponza_curtain_green_
 Ns 7.843137
@@ -192,7 +191,6 @@ Ni 1.000000
 d 0.000000
 illum 2
 map_Kd sponza_textures\sponza_curtain_green_diff.jpg
-map_Ka sponza_textures\sponza_curtain_green_diff.jpg
 
 newmtl fabric_g_sponza_curtain_blue_d
 Ns 7.843137
@@ -203,7 +201,6 @@ Ni 1.000000
 d 0.000000
 illum 2
 map_Kd sponza_textures\sponza_curtain_blue_diff.jpg
-map_Ka sponza_textures\sponza_curtain_blue_diff.jpg
 
 newmtl flagpole_sponza_flagpole_diff.
 Ns 7.843137
@@ -214,7 +211,7 @@ Ni 1.000000
 d 0.000000
 illum 2
 map_Kd sponza_textures\sponza_flagpole_diff.jpg
-map_Ka sponza_textures\sponza_flagpole_diff.jpg
+map_Ks sponza_textures\sponza_flagpole_spec.jpg
 
 newmtl floor_sponza_floor_a_diff.t
 Ns 7.843137
@@ -225,7 +222,8 @@ Ni 1.000000
 d 0.000000
 illum 2
 map_Kd sponza_textures\sponza_floor_a_diff.jpg
-map_Ka sponza_textures\sponza_floor_a_diff.jpg
+map_Ks sponza_textures\sponza_floor_a_spec.jpg
+map_Bump sponza_textures\sponza_floor_a_ddn.jpg
 
 newmtl leaf_sponza_thorn_diff.tga
 Ns 7.843137
@@ -236,9 +234,9 @@ Ni 1.000000
 d 0.000000
 illum 2
 map_Kd sponza_textures\sponza_thorn_diff.jpg
+map_Ks sponza_textures\sponza_thorn_spec.jpg
 map_d sponza_textures\sponza_thorn_mask.jpg
 map_Bump sponza_textures\sponza_thorn_ddn.jpg
-map_Ka sponza_textures\sponza_thorn_diff.jpg
 
 newmtl roof_sponza_roof_diff.tga
 Ns 7.843137
@@ -249,7 +247,7 @@ Ni 1.000000
 d 0.000000
 illum 2
 map_Kd sponza_textures\sponza_roof_diff.jpg
-map_Ka sponza_textures\sponza_roof_diff.jpg
+map_Bump sponza_textures\sponza_roof_ddn.jpg
 
 newmtl vase_hanging_vase_hanging.tga
 Ns 7.843137
@@ -260,7 +258,6 @@ Ni 1.000000
 d 0.000000
 illum 2
 map_Kd sponza_textures\vase_hanging.jpg
-map_Ka sponza_textures\vase_hanging.jpg
 
 newmtl vase_round_vase_round.tga
 Ns 7.843137
@@ -272,7 +269,7 @@ d 0.000000
 illum 2
 map_Kd sponza_textures\vase_round.jpg
 map_Bump sponza_textures\vase_round_ddn.jpg
-map_Ka sponza_textures\vase_round.jpg
+map_Ks sponza_textures\vase_round_spec.jpg
 
 newmtl vase_vase_dif.tga
 Ns 7.843137
@@ -283,4 +280,4 @@ Ni 1.000000
 d 0.000000
 illum 2
 map_Kd sponza_textures\vase_dif.jpg
-map_Ka sponza_textures\vase_dif.jpg
+map_Bump sponza_textures\vase_ddn.jpg

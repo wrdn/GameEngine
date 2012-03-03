@@ -87,6 +87,8 @@ bool OBJLoader::ParseMaterialFile(const c8* mtl_filename, std::map<u32, OBJMater
 
 	u32 activeNode = 0;
 
+	vector<OBJMaterial> dbg_materials;
+
 	while(!mtlFile.eof())
 	{
 		string buff, tmp;
@@ -135,8 +137,7 @@ bool OBJLoader::ParseMaterialFile(const c8* mtl_filename, std::map<u32, OBJMater
 
 bool OBJLoader::LoadOBJFile(const string& filename, vector<GraphicsObject> &output_vec)
 {
-	//ifstream fileStream(filename.c_str());
-	ifstream fileStream;
+	ifstream fileStream(filename.c_str());
 	if(!fileStream.good()) { return false; } // no file
 
 	vector<float3> vertices, normals;
@@ -162,7 +163,7 @@ bool OBJLoader::LoadOBJFile(const string& filename, vector<GraphicsObject> &outp
 
 		switch(p) // by the time we get here, we know the line is valid
 		{
-		case IgnoredLine: break;
+		case IgnoredLine: continue;
 		case USEMTLLine:
 		{
 		  // TODO: WRITE THIS
